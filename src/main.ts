@@ -89,7 +89,7 @@ function render() {
       </label>
       <input type="file" id="file-input" accept="image/*" />
       <div id="error-msg" class="error"></div>
-      <div id="sample-info" class="sample-info">${t('sampleInfo')} <strong>UFO 50</strong></div>
+      <div id="sample-info" class="sample-info">${t('sampleInfo')} <a href="https://store.steampowered.com/app/1147860/UFO_50/" target="_blank" rel="noopener noreferrer"><strong>UFO 50</strong></a></div>
     </section>
 
     <section class="palette-selector-section" id="palette-selector" style="display:none">

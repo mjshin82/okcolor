@@ -141,6 +141,15 @@ body {
   font-size: 0.85rem;
 }
 
+.sample-info a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.sample-info a:hover {
+  color: var(--accent);
+}
+
 .palette-selector-section {
   background: var(--surface);
   border-radius: var(--radius);
