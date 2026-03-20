@@ -5,6 +5,8 @@ import type { ExtractResult } from './image';
 import { PRESET_PALETTES, loadPalFile, parseJascPal, mapPaletteByHue } from './palette';
 import { generateRandomPalette } from './random-palette';
 import type { Brightness, HueMode, PaletteSize } from './random-palette';
+import { t, getLocale, setLocale, getLocaleNames, getHtmlLang } from './i18n';
+import type { Locale } from './i18n';
 import './style.css';
 
 interface ColorEntry {
@@ -42,6 +44,14 @@ let state: {
 
 const app = document.getElementById('app')!;
 
+function renderLocaleOptions(): string {
+  const names = getLocaleNames();
+  const current = getLocale();
+  return (Object.entries(names) as [Locale, string][])
+    .map(([code, name]) => `<option value="${code}"${code === current ? ' selected' : ''}>${name}</option>`)
+    .join('');
+}
+
 function renderPresetOptions(): string {
   return PRESET_PALETTES.map(
     (p, i) => `<option value="${i}"${i === state.selectedPreset ? ' selected' : ''}>${p.name}</option>`,
@@ -49,79 +59,84 @@ function renderPresetOptions(): string {
 }
 
 function render() {
+  document.documentElement.lang = getHtmlLang();
+
   app.innerHTML = `
     <header class="header">
-      <h1>OKLCH Color Tool</h1>
-      <p>Adjust image colors in the OKLCH color space (256 colors or fewer)</p>
+      <div class="header-top">
+        <h1>${t('title')}</h1>
+        <select id="lang-select" class="lang-select">${renderLocaleOptions()}</select>
+      </div>
+      <p>${t('subtitle')}</p>
     </header>
 
     <section class="upload-section">
       <label class="upload-label" for="file-input">
         <span class="upload-icon">🖼️</span>
-        <span>Select an image file (PNG, GIF, etc. — 256 colors or fewer)</span>
+        <span>${t('selectImage')}</span>
       </label>
       <input type="file" id="file-input" accept="image/*" />
       <div id="error-msg" class="error"></div>
-      <div id="sample-info" class="sample-info" style="display:none">Sample image from <strong>UFO 50</strong></div>
+      <div id="sample-info" class="sample-info" style="display:none">${t('sampleInfo')} <strong>UFO 50</strong></div>
     </section>
 
     <section class="palette-selector-section" id="palette-selector" style="display:none">
-      <h3>Palette</h3>
+      <h3>${t('palette')}</h3>
       <div class="palette-options">
         <label class="palette-radio${state.paletteMode === 'original' ? ' active' : ''}">
           <input type="radio" name="palette-mode" value="original"${state.paletteMode === 'original' ? ' checked' : ''} />
-          Original
+          ${t('original')}
         </label>
         <label class="palette-radio${state.paletteMode === 'preset' ? ' active' : ''}">
           <input type="radio" name="palette-mode" value="preset"${state.paletteMode === 'preset' ? ' checked' : ''} />
-          Preset
+          ${t('preset')}
         </label>
         <label class="palette-radio${state.paletteMode === 'random' ? ' active' : ''}">
           <input type="radio" name="palette-mode" value="random"${state.paletteMode === 'random' ? ' checked' : ''} />
-          Random
+          ${t('random')}
         </label>
         <label class="palette-radio${state.paletteMode === 'custom' ? ' active' : ''}">
           <input type="radio" name="palette-mode" value="custom"${state.paletteMode === 'custom' ? ' checked' : ''} />
-          Upload .pal
+          ${t('uploadPal')}
         </label>
       </div>
       <div class="palette-sub-options">
         <div id="preset-options" style="display:${state.paletteMode === 'preset' ? '' : 'none'}">
           <select id="preset-select">${renderPresetOptions()}</select>
-          <a id="preset-link" class="preset-link" href="${PRESET_PALETTES[state.selectedPreset].url}" target="_blank" rel="noopener noreferrer">${PRESET_PALETTES[state.selectedPreset].name} on Lospec ↗</a>
+          <a id="preset-link" class="preset-link" href="${PRESET_PALETTES[state.selectedPreset].url}" target="_blank" rel="noopener noreferrer">${PRESET_PALETTES[state.selectedPreset].name} ${t('onLospec')} ↗</a>
         </div>
         <div id="random-options" style="display:${state.paletteMode === 'random' ? '' : 'none'}">
           <div class="random-controls">
             <div class="random-group">
-              <span class="random-label">Brightness</span>
+              <span class="random-label">${t('brightness')}</span>
               <div class="toggle-group" data-random="brightness">
-                <button class="toggle-btn${state.randomBrightness === 'bright' ? ' active' : ''}" data-value="bright">Bright</button>
-                <button class="toggle-btn${state.randomBrightness === 'normal' ? ' active' : ''}" data-value="normal">Normal</button>
-                <button class="toggle-btn${state.randomBrightness === 'muted' ? ' active' : ''}" data-value="muted">Muted</button>
+                <button class="toggle-btn${state.randomBrightness === 'bright' ? ' active' : ''}" data-value="bright">${t('bright')}</button>
+                <button class="toggle-btn${state.randomBrightness === 'normal' ? ' active' : ''}" data-value="normal">${t('normal')}</button>
+                <button class="toggle-btn${state.randomBrightness === 'muted' ? ' active' : ''}" data-value="muted">${t('muted')}</button>
               </div>
             </div>
             <div class="random-group">
-              <span class="random-label">Hue</span>
+              <span class="random-label">${t('hue')}</span>
               <div class="toggle-group" data-random="hueMode">
-                <button class="toggle-btn${state.randomHueMode === 'diverse' ? ' active' : ''}" data-value="diverse">Diverse</button>
-                <button class="toggle-btn${state.randomHueMode === 'complementary' ? ' active' : ''}" data-value="complementary">Complementary</button>
-                <button class="toggle-btn${state.randomHueMode === 'monotone' ? ' active' : ''}" data-value="monotone">Monotone</button>
+                <button class="toggle-btn${state.randomHueMode === 'diverse' ? ' active' : ''}" data-value="diverse">${t('diverse')}</button>
+                <button class="toggle-btn${state.randomHueMode === 'complementary' ? ' active' : ''}" data-value="complementary">${t('complementary')}</button>
+                <button class="toggle-btn${state.randomHueMode === 'monotone' ? ' active' : ''}" data-value="monotone">${t('monotone')}</button>
               </div>
             </div>
             <div class="random-group">
-              <span class="random-label">Colors</span>
+              <span class="random-label">${t('colors')}</span>
               <div class="toggle-group" data-random="size">
                 <button class="toggle-btn${state.randomSize === 8 ? ' active' : ''}" data-value="8">8</button>
                 <button class="toggle-btn${state.randomSize === 16 ? ' active' : ''}" data-value="16">16</button>
                 <button class="toggle-btn${state.randomSize === 32 ? ' active' : ''}" data-value="32">32</button>
               </div>
             </div>
-            <button id="random-generate-btn" class="generate-btn">Generate</button>
+            <button id="random-generate-btn" class="generate-btn">${t('generate')}</button>
           </div>
         </div>
         <div id="custom-options" style="display:${state.paletteMode === 'custom' ? '' : 'none'}">
           <label class="upload-label small" for="pal-file-input">
-            <span>Select .pal file</span>
+            <span>${t('selectPalFile')}</span>
           </label>
           <input type="file" id="pal-file-input" accept=".pal" />
           <span id="custom-pal-name" class="pal-name"></span>
@@ -133,34 +148,34 @@ function render() {
     <section class="controls-section" id="controls" style="display:none">
       <div class="slider-group">
         <label>
-          Chroma Offset: <span id="chroma-value">${state.chromaOffset.toFixed(3)}</span>
+          ${t('chromaOffset')}: <span id="chroma-value">${state.chromaOffset.toFixed(3)}</span>
         </label>
         <input type="range" id="chroma-slider" min="-0.4" max="0.4" step="0.001" value="${state.chromaOffset}" />
       </div>
       <div class="slider-group">
         <label>
-          Hue Offset: <span id="hue-value">${state.hueOffset.toFixed(1)}°</span>
+          ${t('hueOffset')}: <span id="hue-value">${state.hueOffset.toFixed(1)}°</span>
         </label>
         <input type="range" id="hue-slider" min="-180" max="180" step="0.5" value="${state.hueOffset}" />
       </div>
-      <button id="reset-btn" class="reset-btn">Reset</button>
+      <button id="reset-btn" class="reset-btn">${t('reset')}</button>
     </section>
 
     <section class="content-section" id="content" style="display:none">
       <div class="preview-area">
         <div class="preview-box">
-          <h3>Original</h3>
+          <h3>${t('original')}</h3>
           <canvas id="original-canvas"></canvas>
         </div>
         <div class="preview-box">
-          <h3>Modified</h3>
+          <h3>${t('modified')}</h3>
           <canvas id="modified-canvas"></canvas>
         </div>
       </div>
       <div class="palette-area">
         <div class="palette-area-header">
-          <h3>Color Palette (<span id="color-count">0</span> colors)</h3>
-          <button id="download-pal-btn" class="download-btn">Download .pal</button>
+          <h3>${t('colorPalette')} (<span id="color-count">0</span> ${t('colorsCount')})</h3>
+          <button id="download-pal-btn" class="download-btn">${t('downloadPal')}</button>
         </div>
         <div id="palette" class="palette"></div>
       </div>
@@ -185,6 +200,17 @@ function render() {
 function bindEvents() {
   const fileInput = document.getElementById('file-input') as HTMLInputElement;
   fileInput.addEventListener('change', handleFileChange);
+
+  // Language selector
+  const langSelect = document.getElementById('lang-select') as HTMLSelectElement;
+  if (langSelect) {
+    langSelect.addEventListener('change', () => {
+      setLocale(langSelect.value as Locale);
+      render();
+      // Re-render palette preview if active
+      if (state.paletteColors) renderPalettePreview(state.paletteColors);
+    });
+  }
 
   const chromaSlider = document.getElementById('chroma-slider') as HTMLInputElement;
   const hueSlider = document.getElementById('hue-slider') as HTMLInputElement;
@@ -250,7 +276,6 @@ function bindEvents() {
         if (key === 'brightness') state.randomBrightness = btn.dataset.value as Brightness;
         else if (key === 'hueMode') state.randomHueMode = btn.dataset.value as HueMode;
         else if (key === 'size') state.randomSize = parseInt(btn.dataset.value!, 10) as PaletteSize;
-        // Update active state within group
         group.querySelectorAll('.toggle-btn').forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
       });
@@ -300,7 +325,7 @@ function updatePresetLink() {
   if (!link) return;
   const preset = PRESET_PALETTES[state.selectedPreset];
   link.href = preset.url;
-  link.textContent = `${preset.name} on Lospec ↗`;
+  link.textContent = `${preset.name} ${t('onLospec')} ↗`;
 }
 
 async function applyPaletteSelection() {
@@ -442,7 +467,6 @@ function drawOriginalCanvas(result: ExtractResult) {
 }
 
 function computeModifiedColor(entry: ColorEntry): RGB {
-  // If palette mapping is active, start from the mapped color
   let baseOklch: OKLCH;
   if (state.paletteMapping) {
     const key = `${entry.original.r},${entry.original.g},${entry.original.b}`;
@@ -483,9 +507,9 @@ function updateDisplay() {
 
     paletteItems.push(`
       <div class="palette-item">
-        <div class="color-swatch" style="background:${origHex}" title="Original: ${origHex}"></div>
+        <div class="color-swatch" style="background:${origHex}" title="${t('original')}: ${origHex}"></div>
         <div class="color-arrow">→</div>
-        <div class="color-swatch" style="background:${modHex}" title="Modified: ${modHex}"></div>
+        <div class="color-swatch" style="background:${modHex}" title="${t('modified')}: ${modHex}"></div>
         <div class="color-info">
           <span class="hex">${modHex}</span>
           <span class="oklch-info">L:${modOklch.l.toFixed(2)} C:${modOklch.c.toFixed(3)} H:${modOklch.h.toFixed(0)}°</span>

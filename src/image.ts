@@ -1,5 +1,6 @@
 import type { RGB } from './color';
 import { rgbKey } from './color';
+import { t } from './i18n';
 
 const MAX_COLORS = 256;
 
@@ -41,7 +42,7 @@ export function loadImage(file: File): Promise<ExtractResult> {
       const colors = extractColors(imageData);
 
       if (colors.length > MAX_COLORS) {
-        reject(new Error(`Image contains ${colors.length} colors. Only images with ${MAX_COLORS} or fewer colors are supported.`));
+        reject(new Error(t('errorTooManyColors').replace('{count}', String(colors.length)).replace('{max}', String(MAX_COLORS))));
         return;
       }
 
@@ -55,7 +56,7 @@ export function loadImage(file: File): Promise<ExtractResult> {
 
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(new Error('Failed to load the image.'));
+      reject(new Error(t('errorLoadFailed')));
     };
 
     img.src = url;
@@ -76,7 +77,7 @@ export function loadImageFromUrl(url: string): Promise<ExtractResult> {
       const colors = extractColors(imageData);
 
       if (colors.length > MAX_COLORS) {
-        reject(new Error(`Image contains ${colors.length} colors. Only images with ${MAX_COLORS} or fewer colors are supported.`));
+        reject(new Error(t('errorTooManyColors').replace('{count}', String(colors.length)).replace('{max}', String(MAX_COLORS))));
         return;
       }
 
@@ -89,7 +90,7 @@ export function loadImageFromUrl(url: string): Promise<ExtractResult> {
     };
 
     img.onerror = () => {
-      reject(new Error('Failed to load the image.'));
+      reject(new Error(t('errorLoadFailed')));
     };
 
     img.src = url;

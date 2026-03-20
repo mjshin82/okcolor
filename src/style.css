@@ -32,13 +32,35 @@ body {
   margin-bottom: 32px;
 }
 
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
 .header h1 {
   font-size: 2rem;
-  margin-bottom: 8px;
 }
 
 .header p {
   color: var(--text-dim);
+}
+
+.lang-select {
+  padding: 4px 8px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--surface-alt);
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.lang-select:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .upload-section {
