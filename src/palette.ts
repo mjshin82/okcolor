@@ -15,6 +15,9 @@ export const PRESET_PALETTES = [
   { name: 'Endesga 64', file: '/endesga-64.pal', url: 'https://lospec.com/palette-list/endesga-64' },
   { name: 'SLSO8', file: '/slso8.pal', url: 'https://lospec.com/palette-list/slso8' },
   { name: 'Oil 6', file: '/oil-6.pal', url: 'https://lospec.com/palette-list/oil-6' },
+  { name: 'Steam Lords', file: '/steam-lords.pal', url: 'https://lospec.com/palette-list/steam-lords' },
+  { name: 'Rust Gold 8', file: '/rust-gold-8.pal', url: 'https://lospec.com/palette-list/rust-gold-8' },
+  { name: 'CL8UDS', file: '/cl8uds.pal', url: 'https://lospec.com/palette-list/cl8uds' },
 ] as const;
 
 export function parseJascPal(text: string): RGB[] {
