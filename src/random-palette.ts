@@ -109,13 +109,28 @@ export function generateRandomPalette(options: GenerateOptions): RGB[] {
   const selected: { l: number; c: number; h: number }[] = [];
   const MAX_ATTEMPTS = 200;
 
+  // Pre-assign evenly spaced lightness slots for chromatic colors, then jitter
+  const lSlots: number[] = [];
+  for (let i = 0; i < chromaticCount; i++) {
+    const base = lMin + (lMax - lMin) * (i / (chromaticCount - 1 || 1));
+    lSlots.push(base);
+  }
+  // Shuffle so hue anchors don't always pair with the same lightness
+  for (let i = lSlots.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [lSlots[i], lSlots[j]] = [lSlots[j], lSlots[i]];
+  }
+
   // Generate chromatic colors with best-candidate selection
   for (let i = 0; i < chromaticCount; i++) {
     let bestCandidate = { l: 0, c: 0, h: 0 };
     let bestDist = -1;
 
+    // Jitter range for lightness around the assigned slot
+    const lJitter = (lMax - lMin) / (chromaticCount * 2);
+
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-      const l = rand(lMin, lMax);
+      const l = Math.max(lMin, Math.min(lMax, lSlots[i] + rand(-lJitter, lJitter)));
       const c = rand(cMin, cMax);
       const h = hueAnchors[i % hueAnchors.length];
 
@@ -136,10 +151,9 @@ export function generateRandomPalette(options: GenerateOptions): RGB[] {
     selected.push(bestCandidate);
   }
 
-  // Generate achromatic / low-chroma colors spread across lightness
-  const lStep = (lMax - lMin) / (achromaticCount + 1);
+  // Generate achromatic / low-chroma colors spread across full lightness range
   for (let i = 0; i < achromaticCount; i++) {
-    const l = lMin + lStep * (i + 1);
+    const l = lMin + (lMax - lMin) * ((i + 0.5) / achromaticCount);
     const c = rand(0, cMin * 0.3);
     const h = Math.random() * 360;
     selected.push({ l, c, h });
