@@ -7,7 +7,10 @@ import { generateRandomPalette } from './random-palette';
 import type { Brightness, HueMode, PaletteSize } from './random-palette';
 import { t, getLocale, setLocale, getLocaleNames, getHtmlLang } from './i18n';
 import type { Locale } from './i18n';
+import { inject } from '@vercel/analytics';
 import './style.css';
+
+inject();
 
 interface ColorEntry {
   original: RGB;
