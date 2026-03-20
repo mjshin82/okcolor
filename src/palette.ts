@@ -58,7 +58,7 @@ interface OklchEntry {
 function colorScore(oklch: OKLCH): number {
   const normH = oklch.h / 360;
   const normC = Math.min(oklch.c / 0.4, 1);
-  return oklch.l * 0.5 + normH * 0.3 + normC * 0.2;
+  return oklch.l * 0.7 + normH * 0.2 + normC * 0.1;
 }
 
 /**
