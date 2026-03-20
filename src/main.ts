@@ -36,8 +36,8 @@ let state: {
   extractResult: null,
   chromaOffset: 0,
   hueOffset: 0,
-  paletteMode: 'original',
-  selectedPreset: 0,
+  paletteMode: 'preset',
+  selectedPreset: 7,
   paletteColors: null,
   paletteMapping: null,
   randomBrightness: 'normal',
@@ -625,4 +625,4 @@ async function loadSampleImage(url: string) {
 }
 
 render();
-loadSampleImage('/sample1.png');
+loadSampleImage('/sample1.png').then(() => applyPaletteSelection());
