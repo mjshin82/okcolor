@@ -1,5 +1,5 @@
 import type { RGB, OKLCH } from './color';
-import { rgbToOklch, oklchToRgb } from './color';
+import { rgbToOklch } from './color';
 
 export interface Palette {
   name: string;
@@ -66,15 +66,12 @@ function oklchDistance(a: OKLCH, b: OKLCH): number {
 }
 
 /**
- * Map original image colors to a target palette using hue-based normalized matching.
- *
- * @param exactOnly - If true, find nearest target color by OKLCH Euclidean distance.
- *                    If false (default), blend lightness from original with target hue/chroma.
+ * Map original image colors to a target palette.
+ * Finds nearest target color by OKLCH Euclidean distance — only exact target RGB values are used.
  */
 export function mapPaletteByHue(
   originalColors: RGB[],
   targetColors: RGB[],
-  exactOnly = false,
 ): Map<string, RGB> {
   const mapping = new Map<string, RGB>();
 
@@ -87,98 +84,18 @@ export function mapPaletteByHue(
     oklch: rgbToOklch(rgb),
   }));
 
-  if (exactOnly) {
-    // Exact mode: find nearest target by OKLCH Euclidean distance
-    for (const orig of origEntries) {
-      let bestIdx = 0;
-      let bestDist = Infinity;
-      for (let ti = 0; ti < targetEntries.length; ti++) {
-        const dist = oklchDistance(orig.oklch, targetEntries[ti].oklch);
-        if (dist < bestDist) {
-          bestDist = dist;
-          bestIdx = ti;
-        }
+  for (const orig of origEntries) {
+    let bestIdx = 0;
+    let bestDist = Infinity;
+    for (let ti = 0; ti < targetEntries.length; ti++) {
+      const dist = oklchDistance(orig.oklch, targetEntries[ti].oklch);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestIdx = ti;
       }
-      const key = `${orig.rgb.r},${orig.rgb.g},${orig.rgb.b}`;
-      mapping.set(key, targetEntries[bestIdx].rgb);
     }
-    return mapping;
-  }
-
-  // Default mode: hue-based matching with lightness blending
-  const CHROMA_THRESHOLD = 0.02;
-
-  const origChromatic = origEntries.filter((e) => e.oklch.c >= CHROMA_THRESHOLD);
-  const origAchromatic = origEntries.filter((e) => e.oklch.c < CHROMA_THRESHOLD);
-  const targetChromatic = targetEntries.filter((e) => e.oklch.c >= CHROMA_THRESHOLD);
-  const targetAchromatic = targetEntries.filter((e) => e.oklch.c < CHROMA_THRESHOLD);
-
-  origChromatic.sort((a, b) => a.oklch.h - b.oklch.h);
-  targetChromatic.sort((a, b) => a.oklch.h - b.oklch.h);
-  origAchromatic.sort((a, b) => a.oklch.l - b.oklch.l);
-  targetAchromatic.sort((a, b) => a.oklch.l - b.oklch.l);
-
-  if (targetChromatic.length > 0) {
-    const targetNormHues = targetChromatic.map((_, i) =>
-      targetChromatic.length === 1 ? 0.5 : i / (targetChromatic.length - 1),
-    );
-
-    for (let oi = 0; oi < origChromatic.length; oi++) {
-      const origNorm =
-        origChromatic.length === 1 ? 0.5 : oi / (origChromatic.length - 1);
-
-      let bestIdx = 0;
-      let bestDist = Math.abs(targetNormHues[0] - origNorm);
-      for (let ti = 1; ti < targetNormHues.length; ti++) {
-        const dist = Math.abs(targetNormHues[ti] - origNorm);
-        if (dist < bestDist) {
-          bestDist = dist;
-          bestIdx = ti;
-        }
-      }
-
-      const orig = origChromatic[oi];
-      const target = targetChromatic[bestIdx];
-      const key = `${orig.rgb.r},${orig.rgb.g},${orig.rgb.b}`;
-      const mapped: OKLCH = { l: orig.oklch.l, c: target.oklch.c, h: target.oklch.h };
-      mapping.set(key, oklchToRgb(mapped));
-    }
-  }
-
-  if (targetAchromatic.length > 0) {
-    const targetNormLs = targetAchromatic.map((_, i) =>
-      targetAchromatic.length === 1 ? 0.5 : i / (targetAchromatic.length - 1),
-    );
-
-    for (let oi = 0; oi < origAchromatic.length; oi++) {
-      const origNorm =
-        origAchromatic.length === 1 ? 0.5 : oi / (origAchromatic.length - 1);
-
-      let bestIdx = 0;
-      let bestDist = Math.abs(targetNormLs[0] - origNorm);
-      for (let ti = 1; ti < targetNormLs.length; ti++) {
-        const dist = Math.abs(targetNormLs[ti] - origNorm);
-        if (dist < bestDist) {
-          bestDist = dist;
-          bestIdx = ti;
-        }
-      }
-
-      const orig = origAchromatic[oi];
-      const target = targetAchromatic[bestIdx];
-      const key = `${orig.rgb.r},${orig.rgb.g},${orig.rgb.b}`;
-      const mapped: OKLCH = { l: orig.oklch.l, c: target.oklch.c, h: target.oklch.h };
-      mapping.set(key, oklchToRgb(mapped));
-    }
-  } else if (targetChromatic.length > 0) {
-    const darkest = targetChromatic.reduce((a, b) =>
-      a.oklch.l < b.oklch.l ? a : b,
-    );
-    for (const orig of origAchromatic) {
-      const mapped: OKLCH = { l: orig.oklch.l, c: darkest.oklch.c * 0.1, h: darkest.oklch.h };
-      const key = `${orig.rgb.r},${orig.rgb.g},${orig.rgb.b}`;
-      mapping.set(key, oklchToRgb(mapped));
-    }
+    const key = `${orig.rgb.r},${orig.rgb.g},${orig.rgb.b}`;
+    mapping.set(key, targetEntries[bestIdx].rgb);
   }
 
   return mapping;
