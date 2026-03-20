@@ -52,13 +52,25 @@ interface OklchEntry {
 }
 
 /**
- * Compute weighted score for color sorting/matching: L*0.5 + H*0.3 + C*0.2
- * L is already 0-1, H is normalized to 0-1, C is normalized to 0-1 (capped at 0.4)
+ * Compute weighted score for color sorting/matching.
+ * L weight varies by target palette size: 0.7 at ≤8, 0.5 at ≥16, linearly interpolated between.
+ * Remaining weight is split: H gets 2/3, C gets 1/3.
  */
-function colorScore(oklch: OKLCH): number {
+function colorScore(oklch: OKLCH, targetCount: number): number {
   const normH = oklch.h / 360;
   const normC = Math.min(oklch.c / 0.4, 1);
-  return oklch.l * 0.7 + normH * 0.2 + normC * 0.1;
+  let wL: number;
+  if (targetCount <= 8) {
+    wL = 0.7;
+  } else if (targetCount >= 16) {
+    wL = 0.5;
+  } else {
+    wL = 0.7 - (targetCount - 8) / (16 - 8) * (0.7 - 0.5);
+  }
+  const rest = 1 - wL;
+  const wH = rest * (2 / 3);
+  const wC = rest * (1 / 3);
+  return oklch.l * wL + normH * wH + normC * wC;
 }
 
 /**
@@ -85,10 +97,11 @@ export function mapPaletteByHue(
 
   if (exactOnly) {
     // Exact mode: score-based matching, use only target palette RGB values
-    const targetScores = targetEntries.map((e) => ({ ...e, score: colorScore(e.oklch) }));
+    const tc = targetColors.length;
+    const targetScores = targetEntries.map((e) => ({ ...e, score: colorScore(e.oklch, tc) }));
     targetScores.sort((a, b) => a.score - b.score);
 
-    const origScored = origEntries.map((e) => ({ ...e, score: colorScore(e.oklch) }));
+    const origScored = origEntries.map((e) => ({ ...e, score: colorScore(e.oklch, tc) }));
     origScored.sort((a, b) => a.score - b.score);
 
     // Normalize scores to [0,1] within each group
