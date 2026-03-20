@@ -465,10 +465,10 @@ body {
 }
 
 .footer-game-img {
-  width: 80px;
-  height: 80px;
+  width: 186px;
+  height: 87px;
+  object-fit: cover;
   border-radius: var(--radius);
-  image-rendering: pixelated;
   transition: transform 0.15s;
 }
 

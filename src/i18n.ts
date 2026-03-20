@@ -14,7 +14,7 @@ const LOCALE_NAMES: Record<Locale, string> = {
 
 const messages: Record<Locale, Record<string, string>> = {
   en: {
-    title: 'OKLCH Color Tool',
+    title: 'OK Palette',
     subtitle: 'Adjust image colors in the OKLCH color space (256 colors or fewer)',
     selectImage: 'Select an image file (PNG, GIF, etc. — 256 colors or fewer)',
     sampleInfo: 'Sample image from',
@@ -50,7 +50,7 @@ const messages: Record<Locale, Record<string, string>> = {
     footerFollow: 'Follow us',
   },
   ko: {
-    title: 'OKLCH 컬러 도구',
+    title: 'OK Palette',
     subtitle: 'OKLCH 색공간에서 이미지 색상을 조절합니다 (256색 이하)',
     selectImage: '이미지 파일 선택 (PNG, GIF 등 256색 이하)',
     sampleInfo: '샘플 이미지 출처:',
@@ -86,7 +86,7 @@ const messages: Record<Locale, Record<string, string>> = {
     footerFollow: '팔로우',
   },
   ja: {
-    title: 'OKLCH カラーツール',
+    title: 'OK Palette',
     subtitle: 'OKLCH色空間で画像の色を調整します（256色以下）',
     selectImage: '画像ファイルを選択（PNG、GIFなど 256色以下）',
     sampleInfo: 'サンプル画像の出典:',
@@ -122,7 +122,7 @@ const messages: Record<Locale, Record<string, string>> = {
     footerFollow: 'フォロー',
   },
   es: {
-    title: 'Herramienta de Color OKLCH',
+    title: 'OK Palette',
     subtitle: 'Ajusta los colores de la imagen en el espacio de color OKLCH (256 colores o menos)',
     selectImage: 'Seleccionar imagen (PNG, GIF, etc. — 256 colores o menos)',
     sampleInfo: 'Imagen de muestra de',
@@ -158,7 +158,7 @@ const messages: Record<Locale, Record<string, string>> = {
     footerFollow: 'Síguenos',
   },
   pt: {
-    title: 'Ferramenta de Cor OKLCH',
+    title: 'OK Palette',
     subtitle: 'Ajuste as cores da imagem no espaço de cor OKLCH (256 cores ou menos)',
     selectImage: 'Selecionar imagem (PNG, GIF, etc. — 256 cores ou menos)',
     sampleInfo: 'Imagem de exemplo de',
@@ -194,7 +194,7 @@ const messages: Record<Locale, Record<string, string>> = {
     footerFollow: 'Siga-nos',
   },
   'zh-CN': {
-    title: 'OKLCH 色彩工具',
+    title: 'OK Palette',
     subtitle: '在 OKLCH 色彩空间中调整图像颜色（256色以下）',
     selectImage: '选择图像文件（PNG、GIF等 — 256色以下）',
     sampleInfo: '示例图片来自',
@@ -230,7 +230,7 @@ const messages: Record<Locale, Record<string, string>> = {
     footerFollow: '关注我们',
   },
   'zh-TW': {
-    title: 'OKLCH 色彩工具',
+    title: 'OK Palette',
     subtitle: '在 OKLCH 色彩空間中調整圖像顏色（256色以下）',
     selectImage: '選擇圖像檔案（PNG、GIF等 — 256色以下）',
     sampleInfo: '範例圖片來自',
@@ -266,7 +266,7 @@ const messages: Record<Locale, Record<string, string>> = {
     footerFollow: '追蹤我們',
   },
   de: {
-    title: 'OKLCH Farbwerkzeug',
+    title: 'OK Palette',
     subtitle: 'Bildfarben im OKLCH-Farbraum anpassen (256 Farben oder weniger)',
     selectImage: 'Bilddatei auswählen (PNG, GIF usw. — 256 Farben oder weniger)',
     sampleInfo: 'Beispielbild von',
@@ -302,7 +302,7 @@ const messages: Record<Locale, Record<string, string>> = {
     footerFollow: 'Folge uns',
   },
   fr: {
-    title: 'Outil Couleur OKLCH',
+    title: 'OK Palette',
     subtitle: "Ajustez les couleurs de l'image dans l'espace colorimétrique OKLCH (256 couleurs ou moins)",
     selectImage: "Sélectionner une image (PNG, GIF, etc. — 256 couleurs ou moins)",
     sampleInfo: "Image d'exemple de",
