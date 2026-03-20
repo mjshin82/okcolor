@@ -81,11 +81,10 @@ function minDistance(
 ): number {
   let minDist = Infinity;
   for (const e of existing) {
-    const dl = (candidate.l - e.l) * 3; // lightness weight
-    const dc = (candidate.c - e.c) * 2; // chroma weight
-    // Angular hue distance normalized to [0, 0.5]
-    let dh = Math.abs(candidate.h - e.h) / 360;
-    if (dh > 0.5) dh = 1 - dh;
+    const dl = candidate.l - e.l;
+    const dc = candidate.c - e.c;
+    let dh = Math.abs(candidate.h - e.h) / 180;
+    if (dh > 1) dh = 2 - dh;
     const dist = Math.sqrt(dl * dl + dc * dc + dh * dh);
     if (dist < minDist) minDist = dist;
   }
@@ -107,7 +106,7 @@ export function generateRandomPalette(options: GenerateOptions): RGB[] {
   const chromaticCount = size - achromaticCount;
 
   const selected: { l: number; c: number; h: number }[] = [];
-  const MAX_ATTEMPTS = 200;
+  const MAX_ATTEMPTS = 500;
 
   // Pre-assign evenly spaced lightness slots for chromatic colors, then jitter
   const lSlots: number[] = [];
@@ -126,8 +125,8 @@ export function generateRandomPalette(options: GenerateOptions): RGB[] {
     let bestCandidate = { l: 0, c: 0, h: 0 };
     let bestDist = -1;
 
-    // Jitter range for lightness around the assigned slot
-    const lJitter = (lMax - lMin) / (chromaticCount * 2);
+    // Wide jitter — full range allowed, slot is just a starting bias
+    const lJitter = (lMax - lMin) * 0.4;
 
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
       const l = Math.max(lMin, Math.min(lMax, lSlots[i] + rand(-lJitter, lJitter)));
