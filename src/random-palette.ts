@@ -20,9 +20,9 @@ const CHROMA_RANGE: Record<Brightness, [number, number]> = {
 
 // Lightness ranges per brightness level
 const LIGHTNESS_RANGE: Record<Brightness, [number, number]> = {
-  bright: [0.55, 0.90],
-  normal: [0.30, 0.80],
-  muted: [0.25, 0.65],
+  bright: [0.40, 0.95],
+  normal: [0.15, 0.90],
+  muted: [0.10, 0.75],
 };
 
 function rand(min: number, max: number): number {
