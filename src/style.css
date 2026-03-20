@@ -71,6 +71,42 @@ body {
   margin-bottom: 24px;
 }
 
+.sample-picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sample-picker-label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.sample-thumbs {
+  display: flex;
+  gap: 8px;
+}
+
+.sample-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius);
+  border: 2px solid transparent;
+  cursor: pointer;
+  image-rendering: pixelated;
+  object-fit: cover;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.sample-thumb:hover {
+  border-color: var(--surface-alt);
+  transform: scale(1.05);
+}
+
+.sample-thumb.active {
+  border-color: var(--accent);
+}
+
 .upload-label {
   display: flex;
   align-items: center;
@@ -448,78 +484,16 @@ body {
 
 .footer {
   margin-top: 48px;
-  padding: 32px 24px;
+  padding: 20px 24px;
   background: var(--surface);
   border-radius: var(--radius);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.footer-game {
-  display: flex;
-  align-items: center;
+  justify-content: center;
   gap: 16px;
 }
 
-.footer-game-img {
-  width: 186px;
-  height: 87px;
-  object-fit: cover;
-  border-radius: var(--radius);
-  transition: transform 0.15s;
-}
-
-.footer-game-img:hover {
-  transform: scale(1.05);
-}
-
-.footer-game-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.footer-game-info p {
-  font-size: 0.9rem;
-  color: var(--text-dim);
-}
-
-.footer-game-info a {
-  color: var(--text);
-  text-decoration: none;
-}
-
-.footer-game-info a:hover {
-  color: var(--accent);
-}
-
-.steam-btn {
-  display: inline-block;
-  padding: 6px 14px;
-  background: var(--surface-alt);
-  color: var(--text) !important;
-  border-radius: var(--radius);
-  font-size: 0.8rem;
-  text-decoration: none !important;
-  transition: background 0.2s;
-  width: fit-content;
-}
-
-.steam-btn:hover {
-  background: var(--accent);
-}
-
-.footer-credits {
-  text-align: right;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.footer-credits p {
+.footer p {
   font-size: 0.85rem;
   color: var(--text-dim);
 }

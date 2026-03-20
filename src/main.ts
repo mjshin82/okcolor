@@ -74,13 +74,22 @@ function render() {
     </header>
 
     <section class="upload-section">
+      <div class="sample-picker">
+        <span class="sample-picker-label">${t('sampleImages')}</span>
+        <div class="sample-thumbs">
+          <img src="/sample1.png" class="sample-thumb active" data-sample="1" alt="Sample 1" />
+          <img src="/sample2.png" class="sample-thumb" data-sample="2" alt="Sample 2" />
+          <img src="/sample3.png" class="sample-thumb" data-sample="3" alt="Sample 3" />
+          <img src="/sample4.png" class="sample-thumb" data-sample="4" alt="Sample 4" />
+        </div>
+      </div>
       <label class="upload-label" for="file-input">
         <span class="upload-icon">🖼️</span>
         <span>${t('selectImage')}</span>
       </label>
       <input type="file" id="file-input" accept="image/*" />
       <div id="error-msg" class="error"></div>
-      <div id="sample-info" class="sample-info" style="display:none">${t('sampleInfo')} <strong>UFO 50</strong></div>
+      <div id="sample-info" class="sample-info">${t('sampleInfo')} <strong>UFO 50</strong></div>
     </section>
 
     <section class="palette-selector-section" id="palette-selector" style="display:none">
@@ -185,19 +194,8 @@ function render() {
     </section>
 
     <footer class="footer">
-      <div class="footer-game">
-        <a href="https://store.steampowered.com/app/2888960/Graytail/" target="_blank" rel="noopener noreferrer">
-          <img src="/graytail.png" alt="Graytail" class="footer-game-img" />
-        </a>
-        <div class="footer-game-info">
-          <p>${t('footerMaking')} <a href="https://store.steampowered.com/app/2888960/Graytail/" target="_blank" rel="noopener noreferrer"><strong>Graytail</strong></a></p>
-          <a href="https://store.steampowered.com/app/2888960/Graytail/" target="_blank" rel="noopener noreferrer" class="steam-btn">${t('footerWishlist')}</a>
-        </div>
-      </div>
-      <div class="footer-credits">
-        <p>${t('footerMadeBy')} <strong>Team Concode</strong></p>
-        <a href="https://x.com/TeamConcode" target="_blank" rel="noopener noreferrer" class="footer-x-link">${t('footerFollow')} @TeamConcode</a>
-      </div>
+      <p>${t('footerMadeBy')} <strong>Team Concode</strong></p>
+      <a href="https://x.com/TeamConcode" target="_blank" rel="noopener noreferrer" class="footer-x-link">${t('footerFollow')} @TeamConcode</a>
     </footer>
 
     <div id="lightbox" class="lightbox" style="display:none">
@@ -219,6 +217,16 @@ function render() {
 function bindEvents() {
   const fileInput = document.getElementById('file-input') as HTMLInputElement;
   fileInput.addEventListener('change', handleFileChange);
+
+  // Sample image thumbs
+  document.querySelectorAll<HTMLImageElement>('.sample-thumb').forEach((thumb) => {
+    thumb.addEventListener('click', () => {
+      const num = thumb.dataset.sample;
+      document.querySelectorAll('.sample-thumb').forEach((t) => t.classList.remove('active'));
+      thumb.classList.add('active');
+      loadSampleImage(`/sample${num}.png`);
+    });
+  });
 
   // Language selector
   const langSelect = document.getElementById('lang-select') as HTMLSelectElement;
@@ -586,24 +594,32 @@ function openLightbox(sourceCanvas: HTMLCanvasElement) {
   lightbox.style.display = '';
 }
 
-async function loadDefaultImage() {
+async function loadSampleImage(url: string) {
   try {
-    const result = await loadImageFromUrl('/sample.png');
+    const result = await loadImageFromUrl(url);
     state.extractResult = result;
     state.entries = result.colors.map((rgb) => ({
       original: rgb,
       oklch: rgbToOklch(rgb),
     }));
+    state.chromaOffset = 0;
+    state.hueOffset = 0;
 
     document.getElementById('controls')!.style.display = '';
     document.getElementById('content')!.style.display = '';
     document.getElementById('palette-selector')!.style.display = '';
-    document.getElementById('sample-info')!.style.display = '';
+
+    const cs = document.getElementById('chroma-slider') as HTMLInputElement;
+    const hs = document.getElementById('hue-slider') as HTMLInputElement;
+    if (cs) cs.value = '0';
+    if (hs) hs.value = '0';
+
+    recomputePaletteMapping();
     showContent();
   } catch {
-    // sample.png not available, just wait for user upload
+    // sample not available
   }
 }
 
 render();
-loadDefaultImage();
+loadSampleImage('/sample1.png');
