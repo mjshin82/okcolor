@@ -78,6 +78,120 @@ body {
   font-weight: 600;
 }
 
+.sample-info {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.palette-selector-section {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.palette-selector-section h3 {
+  font-size: 1rem;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+.palette-options {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.palette-radio {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--bg);
+  border: 1px solid var(--surface-alt);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.palette-radio:hover {
+  border-color: var(--accent);
+}
+
+.palette-radio.active {
+  border-color: var(--accent);
+  background: rgba(233, 69, 96, 0.1);
+}
+
+.palette-radio input[type='radio'] {
+  display: none;
+}
+
+.palette-sub-options {
+  margin-bottom: 12px;
+}
+
+.palette-sub-options select {
+  padding: 8px 12px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--surface-alt);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  cursor: pointer;
+  min-width: 180px;
+}
+
+.palette-sub-options select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.preset-link {
+  color: var(--accent);
+  font-size: 0.8rem;
+  margin-left: 12px;
+  text-decoration: none;
+  opacity: 0.8;
+  transition: opacity 0.15s;
+}
+
+.preset-link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.upload-label.small {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  display: inline-flex;
+}
+
+#pal-file-input {
+  display: none;
+}
+
+.pal-name {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin-left: 8px;
+}
+
+.palette-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.palette-preview-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .controls-section {
   background: var(--surface);
   border-radius: var(--radius);

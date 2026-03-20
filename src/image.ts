@@ -41,7 +41,7 @@ export function loadImage(file: File): Promise<ExtractResult> {
       const colors = extractColors(imageData);
 
       if (colors.length > MAX_COLORS) {
-        reject(new Error(`이미지에 ${colors.length}개의 색상이 있습니다. ${MAX_COLORS}색 이하의 이미지만 지원합니다.`));
+        reject(new Error(`Image contains ${colors.length} colors. Only images with ${MAX_COLORS} or fewer colors are supported.`));
         return;
       }
 
@@ -55,7 +55,7 @@ export function loadImage(file: File): Promise<ExtractResult> {
 
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(new Error('이미지를 불러올 수 없습니다.'));
+      reject(new Error('Failed to load the image.'));
     };
 
     img.src = url;
@@ -76,7 +76,7 @@ export function loadImageFromUrl(url: string): Promise<ExtractResult> {
       const colors = extractColors(imageData);
 
       if (colors.length > MAX_COLORS) {
-        reject(new Error(`이미지에 ${colors.length}개의 색상이 있습니다. ${MAX_COLORS}색 이하의 이미지만 지원합니다.`));
+        reject(new Error(`Image contains ${colors.length} colors. Only images with ${MAX_COLORS} or fewer colors are supported.`));
         return;
       }
 
@@ -89,7 +89,7 @@ export function loadImageFromUrl(url: string): Promise<ExtractResult> {
     };
 
     img.onerror = () => {
-      reject(new Error('이미지를 불러올 수 없습니다.'));
+      reject(new Error('Failed to load the image.'));
     };
 
     img.src = url;

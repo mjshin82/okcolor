@@ -2,6 +2,7 @@ import { rgbToOklch, oklchToRgb, rgbToHex, rgbKey } from './color';
 import type { RGB, OKLCH } from './color';
 import { loadImage, loadImageFromUrl, rebuildImageData } from './image';
 import type { ExtractResult } from './image';
+import { PRESET_PALETTES, loadPalFile, parseJascPal, mapPaletteByHue } from './palette';
 import './style.css';
 
 interface ColorEntry {
@@ -9,65 +10,114 @@ interface ColorEntry {
   oklch: OKLCH;
 }
 
+type PaletteMode = 'original' | 'preset' | 'custom';
+
 let state: {
   entries: ColorEntry[];
   extractResult: ExtractResult | null;
   chromaOffset: number;
   hueOffset: number;
+  paletteMode: PaletteMode;
+  selectedPreset: number;
+  paletteColors: RGB[] | null;
+  paletteMapping: Map<string, RGB> | null;
 } = {
   entries: [],
   extractResult: null,
   chromaOffset: 0,
   hueOffset: 0,
+  paletteMode: 'original',
+  selectedPreset: 0,
+  paletteColors: null,
+  paletteMapping: null,
 };
 
 const app = document.getElementById('app')!;
+
+function renderPresetOptions(): string {
+  return PRESET_PALETTES.map(
+    (p, i) => `<option value="${i}"${i === state.selectedPreset ? ' selected' : ''}>${p.name}</option>`,
+  ).join('');
+}
 
 function render() {
   app.innerHTML = `
     <header class="header">
       <h1>OKLCH Color Tool</h1>
-      <p>이미지의 색상을 OKLCH 컬러 스페이스에서 조절합니다 (256색 이하)</p>
+      <p>Adjust image colors in the OKLCH color space (256 colors or fewer)</p>
     </header>
 
     <section class="upload-section">
       <label class="upload-label" for="file-input">
         <span class="upload-icon">🖼️</span>
-        <span>이미지 파일 선택 (PNG, GIF 등 256색 이하)</span>
+        <span>Select an image file (PNG, GIF, etc. — 256 colors or fewer)</span>
       </label>
       <input type="file" id="file-input" accept="image/*" />
       <div id="error-msg" class="error"></div>
+      <div id="sample-info" class="sample-info" style="display:none">Sample image from <strong>UFO 50</strong></div>
+    </section>
+
+    <section class="palette-selector-section" id="palette-selector" style="display:none">
+      <h3>Palette</h3>
+      <div class="palette-options">
+        <label class="palette-radio${state.paletteMode === 'original' ? ' active' : ''}">
+          <input type="radio" name="palette-mode" value="original"${state.paletteMode === 'original' ? ' checked' : ''} />
+          Original
+        </label>
+        <label class="palette-radio${state.paletteMode === 'preset' ? ' active' : ''}">
+          <input type="radio" name="palette-mode" value="preset"${state.paletteMode === 'preset' ? ' checked' : ''} />
+          Preset
+        </label>
+        <label class="palette-radio${state.paletteMode === 'custom' ? ' active' : ''}">
+          <input type="radio" name="palette-mode" value="custom"${state.paletteMode === 'custom' ? ' checked' : ''} />
+          Upload .pal
+        </label>
+      </div>
+      <div class="palette-sub-options">
+        <div id="preset-options" style="display:${state.paletteMode === 'preset' ? '' : 'none'}">
+          <select id="preset-select">${renderPresetOptions()}</select>
+          <a id="preset-link" class="preset-link" href="${PRESET_PALETTES[state.selectedPreset].url}" target="_blank" rel="noopener noreferrer">${PRESET_PALETTES[state.selectedPreset].name} on Lospec ↗</a>
+        </div>
+        <div id="custom-options" style="display:${state.paletteMode === 'custom' ? '' : 'none'}">
+          <label class="upload-label small" for="pal-file-input">
+            <span>Select .pal file</span>
+          </label>
+          <input type="file" id="pal-file-input" accept=".pal" />
+          <span id="custom-pal-name" class="pal-name"></span>
+        </div>
+      </div>
+      <div id="palette-preview" class="palette-preview"></div>
     </section>
 
     <section class="controls-section" id="controls" style="display:none">
       <div class="slider-group">
         <label>
-          Chroma 오프셋: <span id="chroma-value">${state.chromaOffset.toFixed(3)}</span>
+          Chroma Offset: <span id="chroma-value">${state.chromaOffset.toFixed(3)}</span>
         </label>
         <input type="range" id="chroma-slider" min="-0.4" max="0.4" step="0.001" value="${state.chromaOffset}" />
       </div>
       <div class="slider-group">
         <label>
-          Hue 오프셋: <span id="hue-value">${state.hueOffset.toFixed(1)}°</span>
+          Hue Offset: <span id="hue-value">${state.hueOffset.toFixed(1)}°</span>
         </label>
         <input type="range" id="hue-slider" min="-180" max="180" step="0.5" value="${state.hueOffset}" />
       </div>
-      <button id="reset-btn" class="reset-btn">초기화</button>
+      <button id="reset-btn" class="reset-btn">Reset</button>
     </section>
 
     <section class="content-section" id="content" style="display:none">
       <div class="preview-area">
         <div class="preview-box">
-          <h3>원본</h3>
+          <h3>Original</h3>
           <canvas id="original-canvas"></canvas>
         </div>
         <div class="preview-box">
-          <h3>변경됨</h3>
+          <h3>Modified</h3>
           <canvas id="modified-canvas"></canvas>
         </div>
       </div>
       <div class="palette-area">
-        <h3>컬러 팔레트 (<span id="color-count">0</span>색)</h3>
+        <h3>Color Palette (<span id="color-count">0</span> colors)</h3>
         <div id="palette" class="palette"></div>
       </div>
     </section>
@@ -122,6 +172,33 @@ function bindEvents() {
     });
   }
 
+  // Palette mode radios
+  const radios = document.querySelectorAll<HTMLInputElement>('input[name="palette-mode"]');
+  radios.forEach((radio) => {
+    radio.addEventListener('change', () => {
+      state.paletteMode = radio.value as PaletteMode;
+      updatePaletteModeUI();
+      applyPaletteSelection();
+    });
+  });
+
+  // Preset select
+  const presetSelect = document.getElementById('preset-select') as HTMLSelectElement;
+  if (presetSelect) {
+    presetSelect.addEventListener('change', () => {
+      state.selectedPreset = parseInt(presetSelect.value, 10);
+      updatePresetLink();
+      applyPaletteSelection();
+    });
+  }
+
+  // Custom .pal upload
+  const palInput = document.getElementById('pal-file-input') as HTMLInputElement;
+  if (palInput) {
+    palInput.addEventListener('change', handlePalFileChange);
+  }
+
+  // Lightbox
   const lightbox = document.getElementById('lightbox')!;
   const lightboxBackdrop = lightbox.querySelector('.lightbox-backdrop')!;
   const lightboxClose = lightbox.querySelector('.lightbox-close')!;
@@ -134,6 +211,93 @@ function bindEvents() {
   });
 }
 
+function updatePaletteModeUI() {
+  const presetOpts = document.getElementById('preset-options');
+  const customOpts = document.getElementById('custom-options');
+  if (presetOpts) presetOpts.style.display = state.paletteMode === 'preset' ? '' : 'none';
+  if (customOpts) customOpts.style.display = state.paletteMode === 'custom' ? '' : 'none';
+
+  document.querySelectorAll<HTMLLabelElement>('.palette-radio').forEach((label) => {
+    const input = label.querySelector('input') as HTMLInputElement;
+    label.classList.toggle('active', input.checked);
+  });
+}
+
+function updatePresetLink() {
+  const link = document.getElementById('preset-link') as HTMLAnchorElement;
+  if (!link) return;
+  const preset = PRESET_PALETTES[state.selectedPreset];
+  link.href = preset.url;
+  link.textContent = `${preset.name} on Lospec ↗`;
+}
+
+async function applyPaletteSelection() {
+  if (state.paletteMode === 'original') {
+    state.paletteColors = null;
+    state.paletteMapping = null;
+    renderPalettePreview(null);
+    updateDisplay();
+    return;
+  }
+
+  if (state.paletteMode === 'preset') {
+    const preset = PRESET_PALETTES[state.selectedPreset];
+    try {
+      const colors = await loadPalFile(preset.file);
+      state.paletteColors = colors;
+      recomputePaletteMapping();
+      renderPalettePreview(colors);
+      updateDisplay();
+    } catch {
+      state.paletteColors = null;
+      state.paletteMapping = null;
+      updateDisplay();
+    }
+  }
+  // custom mode is handled by handlePalFileChange
+}
+
+async function handlePalFileChange(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+
+  const nameEl = document.getElementById('custom-pal-name');
+  if (nameEl) nameEl.textContent = file.name;
+
+  const text = await file.text();
+  const colors = parseJascPal(text);
+  state.paletteColors = colors;
+  recomputePaletteMapping();
+  renderPalettePreview(colors);
+  updateDisplay();
+}
+
+function recomputePaletteMapping() {
+  if (!state.paletteColors || state.entries.length === 0) {
+    state.paletteMapping = null;
+    return;
+  }
+  const origColors = state.entries.map((e) => e.original);
+  state.paletteMapping = mapPaletteByHue(origColors, state.paletteColors);
+}
+
+function renderPalettePreview(colors: RGB[] | null) {
+  const container = document.getElementById('palette-preview');
+  if (!container) return;
+  if (!colors) {
+    container.innerHTML = '';
+    return;
+  }
+  const swatches = colors
+    .map((c) => {
+      const hex = rgbToHex(c);
+      return `<div class="palette-preview-swatch" style="background:${hex}" title="${hex}"></div>`;
+    })
+    .join('');
+  container.innerHTML = swatches;
+}
+
 async function handleFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input.files?.[0];
@@ -141,6 +305,8 @@ async function handleFileChange(e: Event) {
 
   const errorEl = document.getElementById('error-msg')!;
   errorEl.textContent = '';
+  const sampleInfo = document.getElementById('sample-info');
+  if (sampleInfo) sampleInfo.style.display = 'none';
 
   try {
     const result = await loadImage(file);
@@ -154,12 +320,14 @@ async function handleFileChange(e: Event) {
 
     document.getElementById('controls')!.style.display = '';
     document.getElementById('content')!.style.display = '';
+    document.getElementById('palette-selector')!.style.display = '';
 
     const cs = document.getElementById('chroma-slider') as HTMLInputElement;
     const hs = document.getElementById('hue-slider') as HTMLInputElement;
     if (cs) cs.value = '0';
     if (hs) hs.value = '0';
 
+    recomputePaletteMapping();
     showContent();
   } catch (err) {
     errorEl.textContent = (err as Error).message;
@@ -186,10 +354,24 @@ function drawOriginalCanvas(result: ExtractResult) {
 }
 
 function computeModifiedColor(entry: ColorEntry): RGB {
+  // If palette mapping is active, start from the mapped color
+  let baseOklch: OKLCH;
+  if (state.paletteMapping) {
+    const key = `${entry.original.r},${entry.original.g},${entry.original.b}`;
+    const mapped = state.paletteMapping.get(key);
+    if (mapped) {
+      baseOklch = rgbToOklch(mapped);
+    } else {
+      baseOklch = { ...entry.oklch };
+    }
+  } else {
+    baseOklch = { ...entry.oklch };
+  }
+
   const modified: OKLCH = {
-    l: entry.oklch.l,
-    c: Math.max(0, entry.oklch.c + state.chromaOffset),
-    h: (entry.oklch.h + state.hueOffset + 360) % 360,
+    l: baseOklch.l,
+    c: Math.max(0, baseOklch.c + state.chromaOffset),
+    h: (baseOklch.h + state.hueOffset + 360) % 360,
   };
   return oklchToRgb(modified);
 }
@@ -209,15 +391,16 @@ function updateDisplay() {
 
     const origHex = rgbToHex(entry.original);
     const modHex = rgbToHex(modified);
+    const modOklch = rgbToOklch(modified);
 
     paletteItems.push(`
       <div class="palette-item">
-        <div class="color-swatch" style="background:${origHex}" title="원본: ${origHex}"></div>
+        <div class="color-swatch" style="background:${origHex}" title="Original: ${origHex}"></div>
         <div class="color-arrow">→</div>
-        <div class="color-swatch" style="background:${modHex}" title="변경: ${modHex}"></div>
+        <div class="color-swatch" style="background:${modHex}" title="Modified: ${modHex}"></div>
         <div class="color-info">
           <span class="hex">${modHex}</span>
-          <span class="oklch-info">L:${entry.oklch.l.toFixed(2)} C:${(Math.max(0, entry.oklch.c + state.chromaOffset)).toFixed(3)} H:${((entry.oklch.h + state.hueOffset + 360) % 360).toFixed(0)}°</span>
+          <span class="oklch-info">L:${modOklch.l.toFixed(2)} C:${modOklch.c.toFixed(3)} H:${modOklch.h.toFixed(0)}°</span>
         </div>
       </div>
     `);
@@ -264,6 +447,8 @@ async function loadDefaultImage() {
 
     document.getElementById('controls')!.style.display = '';
     document.getElementById('content')!.style.display = '';
+    document.getElementById('palette-selector')!.style.display = '';
+    document.getElementById('sample-info')!.style.display = '';
     showContent();
   } catch {
     // sample.png not available, just wait for user upload
