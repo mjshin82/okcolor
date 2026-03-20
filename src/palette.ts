@@ -52,31 +52,23 @@ interface OklchEntry {
 }
 
 /**
- * Compute weighted score for color sorting/matching.
- * L weight varies by target palette size: 0.7 at ≤8, 0.5 at ≥16, linearly interpolated between.
- * Remaining weight is split: H gets 2/3, C gets 1/3.
+ * Compute perceptual distance between two OKLCH colors.
+ * Uses angular hue distance for correct wrap-around at 0°/360°.
  */
-function colorScore(oklch: OKLCH, targetCount: number): number {
-  const normH = oklch.h / 360;
-  const normC = Math.min(oklch.c / 0.4, 1);
-  let wL: number;
-  if (targetCount <= 8) {
-    wL = 0.7;
-  } else if (targetCount >= 16) {
-    wL = 0.5;
-  } else {
-    wL = 0.7 - (targetCount - 8) / (16 - 8) * (0.7 - 0.5);
-  }
-  const rest = 1 - wL;
-  const wH = rest * (2 / 3);
-  const wC = rest * (1 / 3);
-  return oklch.l * wL + normH * wH + normC * wC;
+function oklchDistance(a: OKLCH, b: OKLCH): number {
+  const dL = a.l - b.l;
+  const dC = a.c - b.c;
+  let dH = Math.abs(a.h - b.h);
+  if (dH > 180) dH = 360 - dH;
+  // Normalize hue difference to comparable scale (0-1 range like L)
+  const normDH = dH / 180;
+  return Math.sqrt(dL * dL + dC * dC + normDH * normDH);
 }
 
 /**
  * Map original image colors to a target palette using hue-based normalized matching.
  *
- * @param exactOnly - If true, match by weighted L/H/C score using only exact target RGB colors.
+ * @param exactOnly - If true, find nearest target color by OKLCH Euclidean distance.
  *                    If false (default), blend lightness from original with target hue/chroma.
  */
 export function mapPaletteByHue(
@@ -96,41 +88,20 @@ export function mapPaletteByHue(
   }));
 
   if (exactOnly) {
-    // Exact mode: score-based matching, use only target palette RGB values
-    const tc = targetColors.length;
-    const targetScores = targetEntries.map((e) => ({ ...e, score: colorScore(e.oklch, tc) }));
-    targetScores.sort((a, b) => a.score - b.score);
-
-    const origScored = origEntries.map((e) => ({ ...e, score: colorScore(e.oklch, tc) }));
-    origScored.sort((a, b) => a.score - b.score);
-
-    // Normalize scores to [0,1] within each group
-    const origMin = origScored[0]?.score ?? 0;
-    const origMax = origScored[origScored.length - 1]?.score ?? 1;
-    const origRange = origMax - origMin || 1;
-
-    const targetMin = targetScores[0]?.score ?? 0;
-    const targetMax = targetScores[targetScores.length - 1]?.score ?? 1;
-    const targetRange = targetMax - targetMin || 1;
-
-    for (const orig of origScored) {
-      const origNorm = (orig.score - origMin) / origRange;
-
+    // Exact mode: find nearest target by OKLCH Euclidean distance
+    for (const orig of origEntries) {
       let bestIdx = 0;
       let bestDist = Infinity;
-      for (let ti = 0; ti < targetScores.length; ti++) {
-        const targetNorm = (targetScores[ti].score - targetMin) / targetRange;
-        const dist = Math.abs(targetNorm - origNorm);
+      for (let ti = 0; ti < targetEntries.length; ti++) {
+        const dist = oklchDistance(orig.oklch, targetEntries[ti].oklch);
         if (dist < bestDist) {
           bestDist = dist;
           bestIdx = ti;
         }
       }
-
       const key = `${orig.rgb.r},${orig.rgb.g},${orig.rgb.b}`;
-      mapping.set(key, targetScores[bestIdx].rgb);
+      mapping.set(key, targetEntries[bestIdx].rgb);
     }
-
     return mapping;
   }
 
