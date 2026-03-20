@@ -18,6 +18,8 @@ export const PRESET_PALETTES = [
   { name: 'Steam Lords', file: '/steam-lords.pal', url: 'https://lospec.com/palette-list/steam-lords' },
   { name: 'Rust Gold 8', file: '/rust-gold-8.pal', url: 'https://lospec.com/palette-list/rust-gold-8' },
   { name: 'CL8UDS', file: '/cl8uds.pal', url: 'https://lospec.com/palette-list/cl8uds' },
+  { name: 'JustParchment8', file: '/justparchment8.pal', url: 'https://lospec.com/palette-list/justparchment8' },
+  { name: 'Berry Nebula', file: '/berry-nebula.pal', url: 'https://lospec.com/palette-list/berry-nebula' },
 ] as const;
 
 export function parseJascPal(text: string): RGB[] {
