@@ -45,7 +45,7 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: 'Download .pal',
     errorTooManyColors: 'Image contains {count} colors. Only images with {max} or fewer colors are supported.',
     errorLoadFailed: 'Failed to load the image.',
-    footerCredit: 'Made by {author} of {team}',
+    footerCredit: 'Made by',
   },
   ko: {
     title: 'OK Palette',
@@ -79,7 +79,7 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: '.pal 다운로드',
     errorTooManyColors: '이미지에 {count}개의 색상이 있습니다. {max}색 이하의 이미지만 지원합니다.',
     errorLoadFailed: '이미지를 불러올 수 없습니다.',
-    footerCredit: '{team}의 {author}가 제작',
+    footerCredit: '제작',
   },
   ja: {
     title: 'OK Palette',
@@ -113,7 +113,7 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: '.palダウンロード',
     errorTooManyColors: '画像に{count}色が含まれています。{max}色以下の画像のみ対応しています。',
     errorLoadFailed: '画像を読み込めませんでした。',
-    footerCredit: '{team}の{author}が制作',
+    footerCredit: '制作',
   },
   es: {
     title: 'OK Palette',
@@ -147,7 +147,7 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: 'Descargar .pal',
     errorTooManyColors: 'La imagen contiene {count} colores. Solo se admiten imágenes con {max} colores o menos.',
     errorLoadFailed: 'No se pudo cargar la imagen.',
-    footerCredit: 'Hecho por {author} de {team}',
+    footerCredit: 'Hecho por',
   },
   pt: {
     title: 'OK Palette',
@@ -181,7 +181,7 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: 'Baixar .pal',
     errorTooManyColors: 'A imagem contém {count} cores. Apenas imagens com {max} cores ou menos são suportadas.',
     errorLoadFailed: 'Não foi possível carregar a imagem.',
-    footerCredit: 'Feito por {author} de {team}',
+    footerCredit: 'Feito por',
   },
   'zh-CN': {
     title: 'OK Palette',
@@ -215,7 +215,7 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: '下载 .pal',
     errorTooManyColors: '图像包含 {count} 种颜色。仅支持 {max} 种颜色以下的图像。',
     errorLoadFailed: '无法加载图像。',
-    footerCredit: '由 {team} 的 {author} 制作',
+    footerCredit: '制作',
   },
   'zh-TW': {
     title: 'OK Palette',
@@ -249,7 +249,7 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: '下載 .pal',
     errorTooManyColors: '圖像包含 {count} 種顏色。僅支援 {max} 種顏色以下的圖像。',
     errorLoadFailed: '無法載入圖像。',
-    footerCredit: '由 {team} 的 {author} 製作',
+    footerCredit: '製作',
   },
   de: {
     title: 'OK Palette',
@@ -283,7 +283,7 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: '.pal herunterladen',
     errorTooManyColors: 'Das Bild enthält {count} Farben. Es werden nur Bilder mit {max} oder weniger Farben unterstützt.',
     errorLoadFailed: 'Das Bild konnte nicht geladen werden.',
-    footerCredit: 'Erstellt von {author} bei {team}',
+    footerCredit: 'Erstellt von',
   },
   fr: {
     title: 'OK Palette',
@@ -317,7 +317,7 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: 'Télécharger .pal',
     errorTooManyColors: "L'image contient {count} couleurs. Seules les images avec {max} couleurs ou moins sont prises en charge.",
     errorLoadFailed: "Impossible de charger l'image.",
-    footerCredit: 'Créé par {author} de {team}',
+    footerCredit: 'Créé par',
   },
 };
 

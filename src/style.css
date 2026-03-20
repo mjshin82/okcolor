@@ -495,11 +495,11 @@ body {
 
 .footer p {
   font-size: 0.85rem;
-  color: var(--text-dim);
+  color: #fff;
 }
 
 .footer a {
-  color: var(--text);
+  color: #fff;
   text-decoration: none;
   transition: color 0.15s;
 }
