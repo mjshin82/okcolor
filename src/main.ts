@@ -209,6 +209,10 @@ function render() {
   bindEvents();
 
   if (state.extractResult) {
+    document.getElementById('controls')!.style.display = '';
+    document.getElementById('content')!.style.display = '';
+    document.getElementById('palette-selector')!.style.display = '';
+    if (state.paletteColors) renderPalettePreview(state.paletteColors);
     showContent();
   }
 }
