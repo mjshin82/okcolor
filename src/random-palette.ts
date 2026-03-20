@@ -158,8 +158,31 @@ export function generateRandomPalette(options: GenerateOptions): RGB[] {
     selected.push({ l, c, h });
   }
 
-  // Sort by hue then lightness for a pleasant ordering
-  selected.sort((a, b) => a.h - b.h || a.l - b.l);
+  // Order by nearest-neighbor chain, starting from darkest color
+  const ordered: typeof selected = [];
+  const remaining = [...selected];
 
-  return selected.map((oklch) => oklchToRgb(oklch));
+  // Start with the darkest color (lowest L)
+  let startIdx = 0;
+  for (let i = 1; i < remaining.length; i++) {
+    if (remaining[i].l < remaining[startIdx].l) startIdx = i;
+  }
+  ordered.push(remaining.splice(startIdx, 1)[0]);
+
+  // Greedily pick the closest remaining color each step
+  while (remaining.length > 0) {
+    const last = ordered[ordered.length - 1];
+    let bestIdx = 0;
+    let bestDist = Infinity;
+    for (let i = 0; i < remaining.length; i++) {
+      const dist = minDistance(last, [remaining[i]]);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestIdx = i;
+      }
+    }
+    ordered.push(remaining.splice(bestIdx, 1)[0]);
+  }
+
+  return ordered.map((oklch) => oklchToRgb(oklch));
 }
