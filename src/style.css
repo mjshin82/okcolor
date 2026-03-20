@@ -498,14 +498,13 @@ body {
   color: var(--text-dim);
 }
 
-.footer-x-link {
-  color: var(--text-dim);
+.footer a {
+  color: var(--text);
   text-decoration: none;
-  font-size: 0.8rem;
   transition: color 0.15s;
 }
 
-.footer-x-link:hover {
+.footer a:hover {
   color: var(--accent);
 }
 

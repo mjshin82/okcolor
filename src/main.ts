@@ -194,8 +194,7 @@ function render() {
     </section>
 
     <footer class="footer">
-      <p>${t('footerMadeBy')} <strong>Team Concode</strong></p>
-      <a href="https://x.com/TeamConcode" target="_blank" rel="noopener noreferrer" class="footer-x-link">${t('footerFollow')} @TeamConcode</a>
+      <p>${t('footerCredit').replace('{team}', '<a href="https://x.com/TeamConcode" target="_blank" rel="noopener noreferrer">@TeamConcode</a>').replace('{author}', '<a href="https://x.com/SyntaxFossil" target="_blank" rel="noopener noreferrer">@SyntaxFossil</a>')}</p>
     </footer>
 
     <div id="lightbox" class="lightbox" style="display:none">
