@@ -446,6 +446,95 @@ body {
   text-overflow: ellipsis;
 }
 
+.footer {
+  margin-top: 48px;
+  padding: 32px 24px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.footer-game {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-game-img {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius);
+  image-rendering: pixelated;
+  transition: transform 0.15s;
+}
+
+.footer-game-img:hover {
+  transform: scale(1.05);
+}
+
+.footer-game-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-game-info p {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+.footer-game-info a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.footer-game-info a:hover {
+  color: var(--accent);
+}
+
+.steam-btn {
+  display: inline-block;
+  padding: 6px 14px;
+  background: var(--surface-alt);
+  color: var(--text) !important;
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  text-decoration: none !important;
+  transition: background 0.2s;
+  width: fit-content;
+}
+
+.steam-btn:hover {
+  background: var(--accent);
+}
+
+.footer-credits {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.footer-credits p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.footer-x-link {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 0.8rem;
+  transition: color 0.15s;
+}
+
+.footer-x-link:hover {
+  color: var(--accent);
+}
+
 .lightbox {
   position: fixed;
   inset: 0;

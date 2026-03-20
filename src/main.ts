@@ -184,6 +184,22 @@ function render() {
       </div>
     </section>
 
+    <footer class="footer">
+      <div class="footer-game">
+        <a href="https://store.steampowered.com/app/2888960/Graytail/" target="_blank" rel="noopener noreferrer">
+          <img src="/graytail.png" alt="Graytail" class="footer-game-img" />
+        </a>
+        <div class="footer-game-info">
+          <p>${t('footerMaking')} <a href="https://store.steampowered.com/app/2888960/Graytail/" target="_blank" rel="noopener noreferrer"><strong>Graytail</strong></a></p>
+          <a href="https://store.steampowered.com/app/2888960/Graytail/" target="_blank" rel="noopener noreferrer" class="steam-btn">${t('footerWishlist')}</a>
+        </div>
+      </div>
+      <div class="footer-credits">
+        <p>${t('footerMadeBy')} <strong>Team Concode</strong></p>
+        <a href="https://x.com/TeamConcode" target="_blank" rel="noopener noreferrer" class="footer-x-link">${t('footerFollow')} @TeamConcode</a>
+      </div>
+    </footer>
+
     <div id="lightbox" class="lightbox" style="display:none">
       <div class="lightbox-backdrop"></div>
       <div class="lightbox-content">

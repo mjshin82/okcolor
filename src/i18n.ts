@@ -44,6 +44,10 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: 'Download .pal',
     errorTooManyColors: 'Image contains {count} colors. Only images with {max} or fewer colors are supported.',
     errorLoadFailed: 'Failed to load the image.',
+    footerMadeBy: 'Made by',
+    footerMaking: 'We are making',
+    footerWishlist: 'Wishlist on Steam',
+    footerFollow: 'Follow us',
   },
   ko: {
     title: 'OKLCH 컬러 도구',
@@ -76,6 +80,10 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: '.pal 다운로드',
     errorTooManyColors: '이미지에 {count}개의 색상이 있습니다. {max}색 이하의 이미지만 지원합니다.',
     errorLoadFailed: '이미지를 불러올 수 없습니다.',
+    footerMadeBy: '제작',
+    footerMaking: '개발 중인 게임',
+    footerWishlist: 'Steam에서 위시리스트',
+    footerFollow: '팔로우',
   },
   ja: {
     title: 'OKLCH カラーツール',
@@ -108,6 +116,10 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: '.palダウンロード',
     errorTooManyColors: '画像に{count}色が含まれています。{max}色以下の画像のみ対応しています。',
     errorLoadFailed: '画像を読み込めませんでした。',
+    footerMadeBy: '制作',
+    footerMaking: '開発中のゲーム',
+    footerWishlist: 'Steamでウィッシュリスト',
+    footerFollow: 'フォロー',
   },
   es: {
     title: 'Herramienta de Color OKLCH',
@@ -140,6 +152,10 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: 'Descargar .pal',
     errorTooManyColors: 'La imagen contiene {count} colores. Solo se admiten imágenes con {max} colores o menos.',
     errorLoadFailed: 'No se pudo cargar la imagen.',
+    footerMadeBy: 'Hecho por',
+    footerMaking: 'Estamos desarrollando',
+    footerWishlist: 'Wishlist en Steam',
+    footerFollow: 'Síguenos',
   },
   pt: {
     title: 'Ferramenta de Cor OKLCH',
@@ -172,6 +188,10 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: 'Baixar .pal',
     errorTooManyColors: 'A imagem contém {count} cores. Apenas imagens com {max} cores ou menos são suportadas.',
     errorLoadFailed: 'Não foi possível carregar a imagem.',
+    footerMadeBy: 'Feito por',
+    footerMaking: 'Estamos desenvolvendo',
+    footerWishlist: 'Wishlist na Steam',
+    footerFollow: 'Siga-nos',
   },
   'zh-CN': {
     title: 'OKLCH 色彩工具',
@@ -204,6 +224,10 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: '下载 .pal',
     errorTooManyColors: '图像包含 {count} 种颜色。仅支持 {max} 种颜色以下的图像。',
     errorLoadFailed: '无法加载图像。',
+    footerMadeBy: '制作方',
+    footerMaking: '我们正在开发',
+    footerWishlist: '在 Steam 上加入愿望单',
+    footerFollow: '关注我们',
   },
   'zh-TW': {
     title: 'OKLCH 色彩工具',
@@ -236,6 +260,10 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: '下載 .pal',
     errorTooManyColors: '圖像包含 {count} 種顏色。僅支援 {max} 種顏色以下的圖像。',
     errorLoadFailed: '無法載入圖像。',
+    footerMadeBy: '製作方',
+    footerMaking: '我們正在開發',
+    footerWishlist: '在 Steam 上加入願望清單',
+    footerFollow: '追蹤我們',
   },
   de: {
     title: 'OKLCH Farbwerkzeug',
@@ -268,6 +296,10 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: '.pal herunterladen',
     errorTooManyColors: 'Das Bild enthält {count} Farben. Es werden nur Bilder mit {max} oder weniger Farben unterstützt.',
     errorLoadFailed: 'Das Bild konnte nicht geladen werden.',
+    footerMadeBy: 'Erstellt von',
+    footerMaking: 'Wir entwickeln',
+    footerWishlist: 'Wunschliste auf Steam',
+    footerFollow: 'Folge uns',
   },
   fr: {
     title: 'Outil Couleur OKLCH',
@@ -300,6 +332,10 @@ const messages: Record<Locale, Record<string, string>> = {
     downloadPal: 'Télécharger .pal',
     errorTooManyColors: "L'image contient {count} couleurs. Seules les images avec {max} couleurs ou moins sont prises en charge.",
     errorLoadFailed: "Impossible de charger l'image.",
+    footerMadeBy: 'Créé par',
+    footerMaking: 'Nous développons',
+    footerWishlist: 'Wishlist sur Steam',
+    footerFollow: 'Suivez-nous',
   },
 };
 
