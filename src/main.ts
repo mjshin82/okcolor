@@ -3,6 +3,8 @@ import type { RGB, OKLCH } from './color';
 import { loadImage, loadImageFromUrl, rebuildImageData } from './image';
 import type { ExtractResult } from './image';
 import { PRESET_PALETTES, loadPalFile, parseJascPal, mapPaletteByHue } from './palette';
+import { generateRandomPalette } from './random-palette';
+import type { Brightness, HueMode, PaletteSize } from './random-palette';
 import './style.css';
 
 interface ColorEntry {
@@ -10,7 +12,7 @@ interface ColorEntry {
   oklch: OKLCH;
 }
 
-type PaletteMode = 'original' | 'preset' | 'custom';
+type PaletteMode = 'original' | 'preset' | 'custom' | 'random';
 
 let state: {
   entries: ColorEntry[];
@@ -21,6 +23,9 @@ let state: {
   selectedPreset: number;
   paletteColors: RGB[] | null;
   paletteMapping: Map<string, RGB> | null;
+  randomBrightness: Brightness;
+  randomHueMode: HueMode;
+  randomSize: PaletteSize;
 } = {
   entries: [],
   extractResult: null,
@@ -30,6 +35,9 @@ let state: {
   selectedPreset: 0,
   paletteColors: null,
   paletteMapping: null,
+  randomBrightness: 'normal',
+  randomHueMode: 'diverse',
+  randomSize: 16,
 };
 
 const app = document.getElementById('app')!;
@@ -68,6 +76,10 @@ function render() {
           <input type="radio" name="palette-mode" value="preset"${state.paletteMode === 'preset' ? ' checked' : ''} />
           Preset
         </label>
+        <label class="palette-radio${state.paletteMode === 'random' ? ' active' : ''}">
+          <input type="radio" name="palette-mode" value="random"${state.paletteMode === 'random' ? ' checked' : ''} />
+          Random
+        </label>
         <label class="palette-radio${state.paletteMode === 'custom' ? ' active' : ''}">
           <input type="radio" name="palette-mode" value="custom"${state.paletteMode === 'custom' ? ' checked' : ''} />
           Upload .pal
@@ -77,6 +89,35 @@ function render() {
         <div id="preset-options" style="display:${state.paletteMode === 'preset' ? '' : 'none'}">
           <select id="preset-select">${renderPresetOptions()}</select>
           <a id="preset-link" class="preset-link" href="${PRESET_PALETTES[state.selectedPreset].url}" target="_blank" rel="noopener noreferrer">${PRESET_PALETTES[state.selectedPreset].name} on Lospec ↗</a>
+        </div>
+        <div id="random-options" style="display:${state.paletteMode === 'random' ? '' : 'none'}">
+          <div class="random-controls">
+            <div class="random-group">
+              <span class="random-label">Brightness</span>
+              <div class="toggle-group" data-random="brightness">
+                <button class="toggle-btn${state.randomBrightness === 'bright' ? ' active' : ''}" data-value="bright">Bright</button>
+                <button class="toggle-btn${state.randomBrightness === 'normal' ? ' active' : ''}" data-value="normal">Normal</button>
+                <button class="toggle-btn${state.randomBrightness === 'muted' ? ' active' : ''}" data-value="muted">Muted</button>
+              </div>
+            </div>
+            <div class="random-group">
+              <span class="random-label">Hue</span>
+              <div class="toggle-group" data-random="hueMode">
+                <button class="toggle-btn${state.randomHueMode === 'diverse' ? ' active' : ''}" data-value="diverse">Diverse</button>
+                <button class="toggle-btn${state.randomHueMode === 'complementary' ? ' active' : ''}" data-value="complementary">Complementary</button>
+                <button class="toggle-btn${state.randomHueMode === 'monotone' ? ' active' : ''}" data-value="monotone">Monotone</button>
+              </div>
+            </div>
+            <div class="random-group">
+              <span class="random-label">Colors</span>
+              <div class="toggle-group" data-random="size">
+                <button class="toggle-btn${state.randomSize === 8 ? ' active' : ''}" data-value="8">8</button>
+                <button class="toggle-btn${state.randomSize === 16 ? ' active' : ''}" data-value="16">16</button>
+                <button class="toggle-btn${state.randomSize === 32 ? ' active' : ''}" data-value="32">32</button>
+              </div>
+            </div>
+            <button id="random-generate-btn" class="generate-btn">Generate</button>
+          </div>
         </div>
         <div id="custom-options" style="display:${state.paletteMode === 'custom' ? '' : 'none'}">
           <label class="upload-label small" for="pal-file-input">
@@ -117,7 +158,10 @@ function render() {
         </div>
       </div>
       <div class="palette-area">
-        <h3>Color Palette (<span id="color-count">0</span> colors)</h3>
+        <div class="palette-area-header">
+          <h3>Color Palette (<span id="color-count">0</span> colors)</h3>
+          <button id="download-pal-btn" class="download-btn">Download .pal</button>
+        </div>
         <div id="palette" class="palette"></div>
       </div>
     </section>
@@ -172,6 +216,12 @@ function bindEvents() {
     });
   }
 
+  // Download .pal
+  const downloadBtn = document.getElementById('download-pal-btn');
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', downloadModifiedPal);
+  }
+
   // Palette mode radios
   const radios = document.querySelectorAll<HTMLInputElement>('input[name="palette-mode"]');
   radios.forEach((radio) => {
@@ -190,6 +240,26 @@ function bindEvents() {
       updatePresetLink();
       applyPaletteSelection();
     });
+  }
+
+  // Random palette controls
+  document.querySelectorAll<HTMLDivElement>('.toggle-group').forEach((group) => {
+    const key = group.dataset.random;
+    group.querySelectorAll<HTMLButtonElement>('.toggle-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (key === 'brightness') state.randomBrightness = btn.dataset.value as Brightness;
+        else if (key === 'hueMode') state.randomHueMode = btn.dataset.value as HueMode;
+        else if (key === 'size') state.randomSize = parseInt(btn.dataset.value!, 10) as PaletteSize;
+        // Update active state within group
+        group.querySelectorAll('.toggle-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+  });
+
+  const generateBtn = document.getElementById('random-generate-btn');
+  if (generateBtn) {
+    generateBtn.addEventListener('click', applyRandomPalette);
   }
 
   // Custom .pal upload
@@ -213,8 +283,10 @@ function bindEvents() {
 
 function updatePaletteModeUI() {
   const presetOpts = document.getElementById('preset-options');
+  const randomOpts = document.getElementById('random-options');
   const customOpts = document.getElementById('custom-options');
   if (presetOpts) presetOpts.style.display = state.paletteMode === 'preset' ? '' : 'none';
+  if (randomOpts) randomOpts.style.display = state.paletteMode === 'random' ? '' : 'none';
   if (customOpts) customOpts.style.display = state.paletteMode === 'custom' ? '' : 'none';
 
   document.querySelectorAll<HTMLLabelElement>('.palette-radio').forEach((label) => {
@@ -254,7 +326,23 @@ async function applyPaletteSelection() {
       updateDisplay();
     }
   }
+
+  if (state.paletteMode === 'random') {
+    applyRandomPalette();
+  }
   // custom mode is handled by handlePalFileChange
+}
+
+function applyRandomPalette() {
+  const colors = generateRandomPalette({
+    brightness: state.randomBrightness,
+    hueMode: state.randomHueMode,
+    size: state.randomSize,
+  });
+  state.paletteColors = colors;
+  recomputePaletteMapping();
+  renderPalettePreview(colors);
+  updateDisplay();
 }
 
 async function handlePalFileChange(e: Event) {
@@ -424,6 +512,25 @@ function updateDisplay() {
       modCanvas.onclick = () => openLightbox(modCanvas);
     }
   }
+}
+
+function downloadModifiedPal() {
+  if (state.entries.length === 0) return;
+
+  const modifiedColors = state.entries.map((entry) => computeModifiedColor(entry));
+  const lines = [
+    'JASC-PAL',
+    '0100',
+    String(modifiedColors.length),
+    ...modifiedColors.map((c) => `${c.r} ${c.g} ${c.b}`),
+  ];
+  const blob = new Blob([lines.join('\n') + '\n'], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'modified-palette.pal';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function openLightbox(sourceCanvas: HTMLCanvasElement) {
