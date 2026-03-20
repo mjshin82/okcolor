@@ -1,5 +1,5 @@
 import type { RGB, OKLCH } from './color';
-import { rgbToOklch } from './color';
+import { rgbToOklch, oklchToRgb } from './color';
 
 export interface Palette {
   name: string;
@@ -52,17 +52,25 @@ interface OklchEntry {
 }
 
 /**
- * Map original image colors to a target palette using only exact target colors.
+ * Compute weighted score for color sorting/matching: L*0.5 + H*0.3 + C*0.2
+ * L is already 0-1, H is normalized to 0-1, C is normalized to 0-1 (capped at 0.4)
+ */
+function colorScore(oklch: OKLCH): number {
+  const normH = oklch.h / 360;
+  const normC = Math.min(oklch.c / 0.4, 1);
+  return oklch.l * 0.5 + normH * 0.3 + normC * 0.2;
+}
+
+/**
+ * Map original image colors to a target palette using hue-based normalized matching.
  *
- * Algorithm:
- * 1. Convert both palettes to OKLCH
- * 2. Sort each by hue, normalize hue to [0, 1] range based on rank
- * 3. For each original color, find the closest target color by normalized hue position
- * 4. Use the target color's exact RGB — no blending
+ * @param exactOnly - If true, match by weighted L/H/C score using only exact target RGB colors.
+ *                    If false (default), blend lightness from original with target hue/chroma.
  */
 export function mapPaletteByHue(
   originalColors: RGB[],
   targetColors: RGB[],
+  exactOnly = false,
 ): Map<string, RGB> {
   const mapping = new Map<string, RGB>();
 
@@ -75,7 +83,45 @@ export function mapPaletteByHue(
     oklch: rgbToOklch(rgb),
   }));
 
-  // Separate achromatic colors (very low chroma) from chromatic
+  if (exactOnly) {
+    // Exact mode: score-based matching, use only target palette RGB values
+    const targetScores = targetEntries.map((e) => ({ ...e, score: colorScore(e.oklch) }));
+    targetScores.sort((a, b) => a.score - b.score);
+
+    const origScored = origEntries.map((e) => ({ ...e, score: colorScore(e.oklch) }));
+    origScored.sort((a, b) => a.score - b.score);
+
+    // Normalize scores to [0,1] within each group
+    const origMin = origScored[0]?.score ?? 0;
+    const origMax = origScored[origScored.length - 1]?.score ?? 1;
+    const origRange = origMax - origMin || 1;
+
+    const targetMin = targetScores[0]?.score ?? 0;
+    const targetMax = targetScores[targetScores.length - 1]?.score ?? 1;
+    const targetRange = targetMax - targetMin || 1;
+
+    for (const orig of origScored) {
+      const origNorm = (orig.score - origMin) / origRange;
+
+      let bestIdx = 0;
+      let bestDist = Infinity;
+      for (let ti = 0; ti < targetScores.length; ti++) {
+        const targetNorm = (targetScores[ti].score - targetMin) / targetRange;
+        const dist = Math.abs(targetNorm - origNorm);
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestIdx = ti;
+        }
+      }
+
+      const key = `${orig.rgb.r},${orig.rgb.g},${orig.rgb.b}`;
+      mapping.set(key, targetScores[bestIdx].rgb);
+    }
+
+    return mapping;
+  }
+
+  // Default mode: hue-based matching with lightness blending
   const CHROMA_THRESHOLD = 0.02;
 
   const origChromatic = origEntries.filter((e) => e.oklch.c >= CHROMA_THRESHOLD);
@@ -83,15 +129,11 @@ export function mapPaletteByHue(
   const targetChromatic = targetEntries.filter((e) => e.oklch.c >= CHROMA_THRESHOLD);
   const targetAchromatic = targetEntries.filter((e) => e.oklch.c < CHROMA_THRESHOLD);
 
-  // Sort chromatic colors by hue and assign normalized positions
   origChromatic.sort((a, b) => a.oklch.h - b.oklch.h);
   targetChromatic.sort((a, b) => a.oklch.h - b.oklch.h);
-
-  // Sort achromatic colors by lightness
   origAchromatic.sort((a, b) => a.oklch.l - b.oklch.l);
   targetAchromatic.sort((a, b) => a.oklch.l - b.oklch.l);
 
-  // Map chromatic colors by normalized hue position → exact target RGB
   if (targetChromatic.length > 0) {
     const targetNormHues = targetChromatic.map((_, i) =>
       targetChromatic.length === 1 ? 0.5 : i / (targetChromatic.length - 1),
@@ -114,11 +156,11 @@ export function mapPaletteByHue(
       const orig = origChromatic[oi];
       const target = targetChromatic[bestIdx];
       const key = `${orig.rgb.r},${orig.rgb.g},${orig.rgb.b}`;
-      mapping.set(key, target.rgb);
+      const mapped: OKLCH = { l: orig.oklch.l, c: target.oklch.c, h: target.oklch.h };
+      mapping.set(key, oklchToRgb(mapped));
     }
   }
 
-  // Map achromatic colors by normalized lightness position → exact target RGB
   if (targetAchromatic.length > 0) {
     const targetNormLs = targetAchromatic.map((_, i) =>
       targetAchromatic.length === 1 ? 0.5 : i / (targetAchromatic.length - 1),
@@ -141,22 +183,17 @@ export function mapPaletteByHue(
       const orig = origAchromatic[oi];
       const target = targetAchromatic[bestIdx];
       const key = `${orig.rgb.r},${orig.rgb.g},${orig.rgb.b}`;
-      mapping.set(key, target.rgb);
+      const mapped: OKLCH = { l: orig.oklch.l, c: target.oklch.c, h: target.oklch.h };
+      mapping.set(key, oklchToRgb(mapped));
     }
   } else if (targetChromatic.length > 0) {
-    // No achromatic targets — map to closest-lightness chromatic target
+    const darkest = targetChromatic.reduce((a, b) =>
+      a.oklch.l < b.oklch.l ? a : b,
+    );
     for (const orig of origAchromatic) {
-      let bestIdx = 0;
-      let bestDist = Math.abs(targetChromatic[0].oklch.l - orig.oklch.l);
-      for (let ti = 1; ti < targetChromatic.length; ti++) {
-        const dist = Math.abs(targetChromatic[ti].oklch.l - orig.oklch.l);
-        if (dist < bestDist) {
-          bestDist = dist;
-          bestIdx = ti;
-        }
-      }
+      const mapped: OKLCH = { l: orig.oklch.l, c: darkest.oklch.c * 0.1, h: darkest.oklch.h };
       const key = `${orig.rgb.r},${orig.rgb.g},${orig.rgb.b}`;
-      mapping.set(key, targetChromatic[bestIdx].rgb);
+      mapping.set(key, oklchToRgb(mapped));
     }
   }
 

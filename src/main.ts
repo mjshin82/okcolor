@@ -31,6 +31,7 @@ let state: {
   randomBrightness: Brightness;
   randomHueMode: HueMode;
   randomSize: PaletteSize;
+  exactColors: boolean;
 } = {
   entries: [],
   extractResult: null,
@@ -43,6 +44,7 @@ let state: {
   randomBrightness: 'normal',
   randomHueMode: 'diverse',
   randomSize: 16,
+  exactColors: false,
 };
 
 const app = document.getElementById('app')!;
@@ -154,6 +156,10 @@ function render() {
           <span id="custom-pal-name" class="pal-name"></span>
         </div>
       </div>
+      <label id="exact-colors-label" class="exact-colors-label" style="display:${state.paletteMode !== 'original' ? '' : 'none'}">
+        <input type="checkbox" id="exact-colors-check"${state.exactColors ? ' checked' : ''} />
+        ${t('exactColors')}
+      </label>
       <div id="palette-preview" class="palette-preview"></div>
     </section>
 
@@ -317,6 +323,16 @@ function bindEvents() {
     generateBtn.addEventListener('click', applyRandomPalette);
   }
 
+  // Exact colors checkbox
+  const exactCheck = document.getElementById('exact-colors-check') as HTMLInputElement;
+  if (exactCheck) {
+    exactCheck.addEventListener('change', () => {
+      state.exactColors = exactCheck.checked;
+      recomputePaletteMapping();
+      updateDisplay();
+    });
+  }
+
   // Custom .pal upload
   const palInput = document.getElementById('pal-file-input') as HTMLInputElement;
   if (palInput) {
@@ -343,6 +359,8 @@ function updatePaletteModeUI() {
   if (presetOpts) presetOpts.style.display = state.paletteMode === 'preset' ? '' : 'none';
   if (randomOpts) randomOpts.style.display = state.paletteMode === 'random' ? '' : 'none';
   if (customOpts) customOpts.style.display = state.paletteMode === 'custom' ? '' : 'none';
+  const exactLabel = document.getElementById('exact-colors-label');
+  if (exactLabel) exactLabel.style.display = state.paletteMode !== 'original' ? '' : 'none';
 
   document.querySelectorAll<HTMLLabelElement>('.palette-radio').forEach((label) => {
     const input = label.querySelector('input') as HTMLInputElement;
@@ -422,7 +440,7 @@ function recomputePaletteMapping() {
     return;
   }
   const origColors = state.entries.map((e) => e.original);
-  state.paletteMapping = mapPaletteByHue(origColors, state.paletteColors);
+  state.paletteMapping = mapPaletteByHue(origColors, state.paletteColors, state.exactColors);
 }
 
 function renderPalettePreview(colors: RGB[] | null) {
