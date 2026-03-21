@@ -143,9 +143,9 @@ export function mapPaletteByHue(
 
     if (bestOi === -1) break; // all assigned
 
-    // Check if this target is overused (+2 above min usage)
+    // Check if this target is overused (+1 above min usage)
     const minUsage = Math.min(...targetUsage);
-    if (targetUsage[bestTi] >= minUsage + 2) {
+    if (targetUsage[bestTi] >= minUsage + 1) {
       // Penalize this score by 10% and retry
       scores[bestOi][bestTi] *= 0.9;
       continue;
