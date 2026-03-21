@@ -424,6 +424,51 @@ body {
   padding: 16px;
 }
 
+.inline-palette {
+  margin-top: 12px;
+}
+
+.inline-palette-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.inline-palette-count {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.inline-palette-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.inline-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.toggle-mapping-btn {
+  padding: 4px 12px;
+  background: var(--surface-alt);
+  color: var(--text-dim);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.2s;
+}
+
+.toggle-mapping-btn:hover {
+  background: var(--accent);
+  color: white;
+}
+
 .palette-area-header {
   display: flex;
   align-items: center;

@@ -188,18 +188,32 @@ function render() {
         <div class="preview-box">
           <h3>${t('original')}</h3>
           <canvas id="original-canvas"></canvas>
+          <div class="inline-palette">
+            <div class="inline-palette-header">
+              <span class="inline-palette-count"><span id="orig-color-count">0</span> ${t('colorsCount')}</span>
+              <button id="download-orig-pal-btn" class="download-btn">${t('downloadPal')}</button>
+            </div>
+            <div id="orig-palette-swatches" class="inline-palette-swatches"></div>
+          </div>
         </div>
         <div class="preview-box">
           <h3>${t('modified')}</h3>
           <canvas id="modified-canvas"></canvas>
+          <div class="inline-palette">
+            <div class="inline-palette-header">
+              <span class="inline-palette-count"><span id="mod-color-count">0</span> ${t('colorsCount')}</span>
+              <button id="download-mod-pal-btn" class="download-btn">${t('downloadPal')}</button>
+            </div>
+            <div id="mod-palette-swatches" class="inline-palette-swatches"></div>
+          </div>
         </div>
       </div>
       <div class="palette-area">
         <div class="palette-area-header">
-          <h3>${t('colorPalette')} (<span id="color-count">0</span> ${t('colorsCount')})</h3>
-          <button id="download-pal-btn" class="download-btn">${t('downloadPal')}</button>
+          <h3>${t('colorMapping')}</h3>
+          <button id="toggle-mapping-btn" class="toggle-mapping-btn">${t('showMapping')}</button>
         </div>
-        <div id="palette" class="palette"></div>
+        <div id="palette" class="palette" style="display:none"></div>
       </div>
     </section>
 
@@ -286,10 +300,25 @@ function bindEvents() {
     });
   }
 
-  // Download .pal
-  const downloadBtn = document.getElementById('download-pal-btn');
-  if (downloadBtn) {
-    downloadBtn.addEventListener('click', downloadModifiedPal);
+  // Download .pal buttons
+  const downloadOrigBtn = document.getElementById('download-orig-pal-btn');
+  if (downloadOrigBtn) {
+    downloadOrigBtn.addEventListener('click', downloadOriginalPal);
+  }
+  const downloadModBtn = document.getElementById('download-mod-pal-btn');
+  if (downloadModBtn) {
+    downloadModBtn.addEventListener('click', downloadModifiedPal);
+  }
+
+  // Toggle mapping visibility
+  const toggleMappingBtn = document.getElementById('toggle-mapping-btn');
+  const paletteDiv = document.getElementById('palette');
+  if (toggleMappingBtn && paletteDiv) {
+    toggleMappingBtn.addEventListener('click', () => {
+      const hidden = paletteDiv.style.display === 'none';
+      paletteDiv.style.display = hidden ? '' : 'none';
+      toggleMappingBtn.textContent = hidden ? t('hideMapping') : t('showMapping');
+    });
   }
 
   // Palette mode radios
@@ -587,8 +616,28 @@ function updateDisplay() {
   const paletteEl = document.getElementById('palette');
   if (paletteEl) paletteEl.innerHTML = paletteItems.join('');
 
-  const countEl = document.getElementById('color-count');
-  if (countEl) countEl.textContent = String(state.entries.length);
+  // Render inline palettes under each image
+  const origSwatches = document.getElementById('orig-palette-swatches');
+  const modSwatches = document.getElementById('mod-palette-swatches');
+  if (origSwatches) {
+    const uniqueOrig = getUniqueColors(state.entries.map((e) => e.original));
+    origSwatches.innerHTML = uniqueOrig.map((c) => {
+      const hex = rgbToHex(c);
+      return `<div class="inline-swatch" style="background:${hex}" title="${hex}"></div>`;
+    }).join('');
+    const origCount = document.getElementById('orig-color-count');
+    if (origCount) origCount.textContent = String(uniqueOrig.length);
+  }
+  if (modSwatches) {
+    const modColors = state.entries.map((e) => computeModifiedColor(e));
+    const uniqueMod = getUniqueColors(modColors);
+    modSwatches.innerHTML = uniqueMod.map((c) => {
+      const hex = rgbToHex(c);
+      return `<div class="inline-swatch" style="background:${hex}" title="${hex}"></div>`;
+    }).join('');
+    const modCount = document.getElementById('mod-color-count');
+    if (modCount) modCount.textContent = String(uniqueMod.length);
+  }
 
   if (state.extractResult) {
     const modCanvas = document.getElementById('modified-canvas') as HTMLCanvasElement;
@@ -604,23 +653,45 @@ function updateDisplay() {
   }
 }
 
-function downloadModifiedPal() {
-  if (state.entries.length === 0) return;
+function getUniqueColors(colors: RGB[]): RGB[] {
+  const seen = new Set<string>();
+  const result: RGB[] = [];
+  for (const c of colors) {
+    const key = `${c.r},${c.g},${c.b}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(c);
+    }
+  }
+  return result;
+}
 
-  const modifiedColors = state.entries.map((entry) => computeModifiedColor(entry));
+function downloadPalFile(colors: RGB[], filename: string) {
   const lines = [
     'JASC-PAL',
     '0100',
-    String(modifiedColors.length),
-    ...modifiedColors.map((c) => `${c.r} ${c.g} ${c.b}`),
+    String(colors.length),
+    ...colors.map((c) => `${c.r} ${c.g} ${c.b}`),
   ];
   const blob = new Blob([lines.join('\n') + '\n'], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'modified-palette.pal';
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function downloadOriginalPal() {
+  if (state.entries.length === 0) return;
+  const colors = getUniqueColors(state.entries.map((e) => e.original));
+  downloadPalFile(colors, 'original-palette.pal');
+}
+
+function downloadModifiedPal() {
+  if (state.entries.length === 0) return;
+  const colors = getUniqueColors(state.entries.map((e) => computeModifiedColor(e)));
+  downloadPalFile(colors, 'modified-palette.pal');
 }
 
 function openLightbox(sourceCanvas: HTMLCanvasElement) {
