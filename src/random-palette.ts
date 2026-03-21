@@ -4,7 +4,7 @@ import { oklchToRgb, rgbToOklch } from './color';
 export type ValueMode = 'rule603010' | 'rule8020' | 'highContrast' | 'lowContrast' | 'valueScale';
 export type HueMode = 'complementary' | 'analogous' | 'triadic' | 'splitComplementary' | 'tetradic' | 'monochromatic';
 export type SaturationMode = 'sat603010' | 'sat8020' | 'satHighContrast' | 'satLowContrast' | 'satScale';
-export type PaletteSize = 8 | 16 | 32 | 64;
+export type PaletteSize = 8 | 16 | 32 | 64 | 128;
 
 interface GenerateOptions {
   valueMode: ValueMode;

@@ -170,6 +170,7 @@ function render() {
             <div class="random-row">
               <span class="random-label">${t('colors')}</span>
               <div class="toggle-group" data-random="size">
+                <button class="toggle-btn${state.randomSize === 128 ? ' active' : ''}" data-value="128">128</button>
                 <button class="toggle-btn${state.randomSize === 64 ? ' active' : ''}" data-value="64">64</button>
                 <button class="toggle-btn${state.randomSize === 32 ? ' active' : ''}" data-value="32">32</button>
                 <button class="toggle-btn${state.randomSize === 16 ? ' active' : ''}" data-value="16">16</button>
