@@ -78,7 +78,7 @@ const messages: Record<Locale, Record<string, string>> = {
     colorPalette: '컬러 팔레트',
     colorsCount: '색',
     downloadPal: '.pal 다운로드',
-    diverseMapping: '다른 컬러 우선',
+    diverseMapping: '팔레트 다른 컬러 우선 매핑',
     errorTooManyColors: '이미지에 {count}개의 색상이 있습니다. {max}색 이하의 이미지만 지원합니다.',
     errorLoadFailed: '이미지를 불러올 수 없습니다.',
     footerCredit: '제작',
