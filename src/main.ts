@@ -689,8 +689,21 @@ function downloadOriginalPal() {
 }
 
 function downloadModifiedPal() {
-  if (state.entries.length === 0) return;
-  const colors = getUniqueColors(state.entries.map((e) => computeModifiedColor(e)));
+  // Download the full selected palette with C/H offsets applied
+  const basePalette = state.paletteColors
+    ? state.paletteColors
+    : state.entries.map((e) => e.original);
+
+  const colors = basePalette.map((rgb) => {
+    const oklch = rgbToOklch(rgb);
+    const modified: OKLCH = {
+      l: oklch.l,
+      c: Math.max(0, oklch.c + state.chromaOffset),
+      h: (oklch.h + state.hueOffset + 360) % 360,
+    };
+    return oklchToRgb(modified);
+  });
+
   downloadPalFile(colors, 'modified-palette.pal');
 }
 
