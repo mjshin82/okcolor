@@ -47,9 +47,9 @@ let state: {
   paletteMappingColors: null,
   paletteMapping: null,
   randomHueOffset: 0,
-  randomValueMode: 'highContrast',
-  randomHueMode: 'splitComplementary',
-  randomSatMode: 'vividMuted',
+  randomValueMode: 'rule603010',
+  randomHueMode: 'triadic',
+  randomSatMode: 'sat603010',
   randomSize: 64,
   mappingMode: 'diverse' as MappingMode,
 };
@@ -137,21 +137,12 @@ function render() {
         <div id="random-options" style="display:${state.paletteMode === 'random' ? '' : 'none'}">
           <div class="random-controls-vertical">
             <div class="random-row">
-              <span class="random-label">${t('valueMode')}</span>
-              <div class="toggle-group" data-random="valueMode">
-                <button class="toggle-btn${state.randomValueMode === 'highContrast' ? ' active' : ''}" data-value="highContrast">${t('highContrast')}</button>
-                <button class="toggle-btn${state.randomValueMode === 'lowContrast' ? ' active' : ''}" data-value="lowContrast">${t('lowContrast')}</button>
-                <button class="toggle-btn${state.randomValueMode === 'valueScale' ? ' active' : ''}" data-value="valueScale">${t('valueScale')}</button>
-                <button class="toggle-btn${state.randomValueMode === 'rule603010' ? ' active' : ''}" data-value="rule603010">${t('rule603010')}</button>
-              </div>
-            </div>
-            <div class="random-row">
               <span class="random-label">${t('harmony')}</span>
               <div class="toggle-group" data-random="hueMode">
+                <button class="toggle-btn${state.randomHueMode === 'triadic' ? ' active' : ''}" data-value="triadic">${t('hueTriadic')}</button>
                 <button class="toggle-btn${state.randomHueMode === 'splitComplementary' ? ' active' : ''}" data-value="splitComplementary">${t('hueSplitComp')}</button>
                 <button class="toggle-btn${state.randomHueMode === 'complementary' ? ' active' : ''}" data-value="complementary">${t('hueComplementary')}</button>
                 <button class="toggle-btn${state.randomHueMode === 'analogous' ? ' active' : ''}" data-value="analogous">${t('hueAnalogous')}</button>
-                <button class="toggle-btn${state.randomHueMode === 'triadic' ? ' active' : ''}" data-value="triadic">${t('hueTriadic')}</button>
                 <button class="toggle-btn${state.randomHueMode === 'tetradic' ? ' active' : ''}" data-value="tetradic">${t('hueTetradic')}</button>
                 <button class="toggle-btn${state.randomHueMode === 'monochromatic' ? ' active' : ''}" data-value="monochromatic">${t('hueMonochromatic')}</button>
               </div>
@@ -159,11 +150,20 @@ function render() {
             <div class="random-row">
               <span class="random-label">${t('saturation')}</span>
               <div class="toggle-group" data-random="satMode">
+                <button class="toggle-btn${state.randomSatMode === 'sat603010' ? ' active' : ''}" data-value="sat603010">${t('sat603010')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'vividMuted' ? ' active' : ''}" data-value="vividMuted">${t('satVividMuted')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'uniform' ? ' active' : ''}" data-value="uniform">${t('satUniform')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'satScale' ? ' active' : ''}" data-value="satScale">${t('satScale')}</button>
-                <button class="toggle-btn${state.randomSatMode === 'sat603010' ? ' active' : ''}" data-value="sat603010">${t('sat603010')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'chaotic' ? ' active' : ''}" data-value="chaotic">${t('satChaotic')}</button>
+              </div>
+            </div>
+            <div class="random-row">
+              <span class="random-label">${t('valueMode')}</span>
+              <div class="toggle-group" data-random="valueMode">
+                <button class="toggle-btn${state.randomValueMode === 'rule603010' ? ' active' : ''}" data-value="rule603010">${t('rule603010')}</button>
+                <button class="toggle-btn${state.randomValueMode === 'highContrast' ? ' active' : ''}" data-value="highContrast">${t('highContrast')}</button>
+                <button class="toggle-btn${state.randomValueMode === 'lowContrast' ? ' active' : ''}" data-value="lowContrast">${t('lowContrast')}</button>
+                <button class="toggle-btn${state.randomValueMode === 'valueScale' ? ' active' : ''}" data-value="valueScale">${t('valueScale')}</button>
               </div>
             </div>
             <div class="random-row">
