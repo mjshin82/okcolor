@@ -243,7 +243,16 @@ function minDistance(
   return minDist;
 }
 
-export function generateRandomPalette(options: GenerateOptions): RGB[] {
+export interface GenerateResult {
+  /** Colors with hue offset applied — for palette preview display */
+  displayColors: RGB[];
+  /** Colors without hue offset — for image mapping */
+  mappingColors: RGB[];
+  /** The random hue offset that was applied */
+  hueOffset: number;
+}
+
+export function generateRandomPalette(options: GenerateOptions): GenerateResult {
   const { valueMode, hueMode, saturationMode, size, imageData } = options;
 
   // Determine base hue from image analysis, fallback to random
@@ -254,9 +263,10 @@ export function generateRandomPalette(options: GenerateOptions): RGB[] {
     baseHue = Math.random() * 360;
   }
 
-  // Apply random hue offset for variety (±60°)
-  baseHue = (baseHue + rand(-60, 60) + 360) % 360;
+  // Random hue offset for variety (±60°), stored separately
+  const randomHueOffset = rand(-60, 60);
 
+  // Generate anchors WITHOUT the offset (for mapping)
   const hueAnchors = generateHueAnchors(hueMode, size, baseHue);
   const lSlots = generateLightnessSlots(valueMode, size);
   const cSlots = generateChromaSlots(saturationMode, size);
@@ -328,5 +338,15 @@ export function generateRandomPalette(options: GenerateOptions): RGB[] {
     ordered.push(remaining.splice(bestIdx, 1)[0]);
   }
 
-  return ordered.map((oklch) => oklchToRgb(oklch));
+  // Mapping colors: no hue offset
+  const mappingColors = ordered.map((oklch) => oklchToRgb(oklch));
+
+  // Display colors: with hue offset applied
+  const displayColors = ordered.map((oklch) => oklchToRgb({
+    l: oklch.l,
+    c: oklch.c,
+    h: (oklch.h + randomHueOffset + 360) % 360,
+  }));
+
+  return { displayColors, mappingColors, hueOffset: randomHueOffset };
 }

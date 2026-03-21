@@ -28,7 +28,9 @@ let state: {
   paletteMode: PaletteMode;
   selectedPreset: number;
   paletteColors: RGB[] | null;
+  paletteMappingColors: RGB[] | null;
   paletteMapping: Map<string, RGB> | null;
+  randomHueOffset: number;
   randomValueMode: ValueMode;
   randomHueMode: HueMode;
   randomSatMode: SaturationMode;
@@ -42,7 +44,9 @@ let state: {
   paletteMode: 'original',
   selectedPreset: 2,
   paletteColors: null,
+  paletteMappingColors: null,
   paletteMapping: null,
+  randomHueOffset: 0,
   randomValueMode: 'rule603010',
   randomHueMode: 'analogous',
   randomSatMode: 'uniform',
@@ -435,6 +439,12 @@ function updatePresetLink() {
 }
 
 async function applyPaletteSelection() {
+  // Clear random-specific state when not in random mode
+  if (state.paletteMode !== 'random') {
+    state.paletteMappingColors = null;
+    state.randomHueOffset = 0;
+  }
+
   if (state.paletteMode === 'original') {
     state.paletteColors = null;
     state.paletteMapping = null;
@@ -465,16 +475,18 @@ async function applyPaletteSelection() {
 }
 
 function applyRandomPalette() {
-  const colors = generateRandomPalette({
+  const result = generateRandomPalette({
     valueMode: state.randomValueMode,
     hueMode: state.randomHueMode,
     saturationMode: state.randomSatMode,
     size: state.randomSize,
     imageData: state.extractResult?.imageData,
   });
-  state.paletteColors = colors;
+  state.paletteColors = result.displayColors;
+  state.paletteMappingColors = result.mappingColors;
+  state.randomHueOffset = result.hueOffset;
   recomputePaletteMapping();
-  renderPalettePreview(colors);
+  renderPalettePreview(result.displayColors);
   updateDisplay();
 }
 
@@ -499,8 +511,10 @@ function recomputePaletteMapping() {
     state.paletteMapping = null;
     return;
   }
+  // Use mapping colors (no hue offset) for random palettes, display colors for others
+  const targetColors = state.paletteMappingColors ?? state.paletteColors;
   const origColors = state.entries.map((e) => e.original);
-  state.paletteMapping = mapPaletteByHue(origColors, state.paletteColors, state.mappingMode);
+  state.paletteMapping = mapPaletteByHue(origColors, targetColors, state.mappingMode);
 }
 
 function renderPalettePreview(colors: RGB[] | null) {
@@ -588,10 +602,12 @@ function computeModifiedColor(entry: ColorEntry): RGB {
     baseOklch = { ...entry.oklch };
   }
 
+  // Apply random hue offset (from generated palette) + user hue offset
+  const totalHueOffset = state.hueOffset + state.randomHueOffset;
   const modified: OKLCH = {
     l: baseOklch.l,
     c: Math.max(0, baseOklch.c + state.chromaOffset),
-    h: (baseOklch.h + state.hueOffset + 360) % 360,
+    h: (baseOklch.h + totalHueOffset + 360) % 360,
   };
   return oklchToRgb(modified);
 }
@@ -702,7 +718,9 @@ function downloadOriginalPal() {
 }
 
 function downloadModifiedPal() {
-  // Download the full selected palette with C/H offsets applied
+  // Download the full palette with user C/H offsets applied
+  // For random palettes: display colors already have randomHueOffset,
+  // so only add user's hueOffset (not randomHueOffset again)
   const basePalette = state.paletteColors
     ? state.paletteColors
     : state.entries.map((e) => e.original);
