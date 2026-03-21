@@ -1,5 +1,7 @@
 import type { RGB, OKLCH } from './color';
-import { rgbToOklch } from './color';
+import { rgbToOklch, oklchToRgb } from './color';
+
+export type MappingMode = 'nearest' | 'diverse' | 'hueOnly';
 
 export interface Palette {
   name: string;
@@ -67,14 +69,16 @@ function oklchDistance(a: OKLCH, b: OKLCH): number {
 
 /**
  * Map original image colors to a target palette.
- * Finds nearest target color by OKLCH Euclidean distance — only exact target RGB values are used.
  *
- * @param diverseMapping - If true, spread colors across target palette by penalizing overused targets.
+ * Modes:
+ * - 'nearest': find closest target by OKLCH distance, use exact target RGB
+ * - 'diverse': spread colors evenly across target palette
+ * - 'hueOnly': find closest target, apply its hue but keep original L and C
  */
 export function mapPaletteByHue(
   originalColors: RGB[],
   targetColors: RGB[],
-  diverseMapping = false,
+  mode: MappingMode = 'nearest',
 ): Map<string, RGB> {
   const origEntries: OklchEntry[] = originalColors.map((rgb) => ({
     rgb,
@@ -85,7 +89,30 @@ export function mapPaletteByHue(
     oklch: rgbToOklch(rgb),
   }));
 
-  if (!diverseMapping) {
+  if (mode === 'hueOnly') {
+    const mapping = new Map<string, RGB>();
+    for (const orig of origEntries) {
+      let bestIdx = 0;
+      let bestDist = Infinity;
+      for (let ti = 0; ti < targetEntries.length; ti++) {
+        const dist = oklchDistance(orig.oklch, targetEntries[ti].oklch);
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestIdx = ti;
+        }
+      }
+      const key = `${orig.rgb.r},${orig.rgb.g},${orig.rgb.b}`;
+      const mapped: OKLCH = {
+        l: orig.oklch.l,
+        c: orig.oklch.c,
+        h: targetEntries[bestIdx].oklch.h,
+      };
+      mapping.set(key, oklchToRgb(mapped));
+    }
+    return mapping;
+  }
+
+  if (mode === 'nearest') {
     const mapping = new Map<string, RGB>();
     for (const orig of origEntries) {
       let bestIdx = 0;

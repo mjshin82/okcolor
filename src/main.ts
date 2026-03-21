@@ -3,6 +3,7 @@ import type { RGB, OKLCH } from './color';
 import { loadImage, loadImageFromUrl, rebuildImageData } from './image';
 import type { ExtractResult } from './image';
 import { PRESET_PALETTES, loadPalFile, parseJascPal, mapPaletteByHue } from './palette';
+import type { MappingMode } from './palette';
 import { generateRandomPalette } from './random-palette';
 import type { Brightness, HueMode, PaletteSize } from './random-palette';
 import { t, getLocale, setLocale, getLocaleNames, getHtmlLang } from './i18n';
@@ -31,7 +32,7 @@ let state: {
   randomBrightness: Brightness;
   randomHueMode: HueMode;
   randomSize: PaletteSize;
-  diverseMapping: boolean;
+  mappingMode: MappingMode;
 } = {
   entries: [],
   extractResult: null,
@@ -44,7 +45,7 @@ let state: {
   randomBrightness: 'normal',
   randomHueMode: 'diverse',
   randomSize: 16,
-  diverseMapping: false,
+  mappingMode: 'nearest' as MappingMode,
 };
 
 const app = document.getElementById('app')!;
@@ -160,8 +161,9 @@ function render() {
       <div id="mapping-mode-group" class="mapping-mode-group" style="display:${state.paletteMode !== 'original' ? '' : 'none'}">
         <span class="random-label">${t('mappingMode')}</span>
         <div class="toggle-group">
-          <button class="toggle-btn${!state.diverseMapping ? ' active' : ''}" id="mapping-nearest">${t('mappingNearest')}</button>
-          <button class="toggle-btn${state.diverseMapping ? ' active' : ''}" id="mapping-diverse">${t('mappingDiverse')}</button>
+          <button class="toggle-btn${state.mappingMode === 'nearest' ? ' active' : ''}" data-mapping="nearest">${t('mappingNearest')}</button>
+          <button class="toggle-btn${state.mappingMode === 'diverse' ? ' active' : ''}" data-mapping="diverse">${t('mappingDiverse')}</button>
+          <button class="toggle-btn${state.mappingMode === 'hueOnly' ? ' active' : ''}" data-mapping="hueOnly">${t('mappingHueOnly')}</button>
         </div>
       </div>
       <div id="palette-preview" class="palette-preview"></div>
@@ -361,24 +363,15 @@ function bindEvents() {
   }
 
   // Mapping mode toggle
-  const mappingNearest = document.getElementById('mapping-nearest');
-  const mappingDiverse = document.getElementById('mapping-diverse');
-  if (mappingNearest && mappingDiverse) {
-    mappingNearest.addEventListener('click', () => {
-      state.diverseMapping = false;
-      mappingNearest.classList.add('active');
-      mappingDiverse.classList.remove('active');
+  document.querySelectorAll<HTMLButtonElement>('[data-mapping]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      state.mappingMode = btn.dataset.mapping as MappingMode;
+      document.querySelectorAll('[data-mapping]').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
       recomputePaletteMapping();
       updateDisplay();
     });
-    mappingDiverse.addEventListener('click', () => {
-      state.diverseMapping = true;
-      mappingDiverse.classList.add('active');
-      mappingNearest.classList.remove('active');
-      recomputePaletteMapping();
-      updateDisplay();
-    });
-  }
+  });
 
   // Custom .pal upload
   const palInput = document.getElementById('pal-file-input') as HTMLInputElement;
@@ -487,7 +480,7 @@ function recomputePaletteMapping() {
     return;
   }
   const origColors = state.entries.map((e) => e.original);
-  state.paletteMapping = mapPaletteByHue(origColors, state.paletteColors, state.diverseMapping);
+  state.paletteMapping = mapPaletteByHue(origColors, state.paletteColors, state.mappingMode);
 }
 
 function renderPalettePreview(colors: RGB[] | null) {
