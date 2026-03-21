@@ -3,7 +3,7 @@ import { oklchToRgb, rgbToOklch } from './color';
 
 export type ValueMode = 'highContrast' | 'lowContrast' | 'valueScale' | 'rule603010';
 export type HueMode = 'complementary' | 'analogous' | 'triadic' | 'splitComplementary' | 'tetradic' | 'monochromatic';
-export type SaturationMode = 'vividMuted' | 'satScale' | 'uniform' | 'sat603010' | 'chaotic';
+export type SaturationMode = 'sat603010' | 'satHighContrast' | 'satLowContrast' | 'satScale';
 export type PaletteSize = 8 | 16 | 32 | 64;
 
 interface GenerateOptions {
@@ -88,34 +88,6 @@ function generateChromaSlots(mode: SaturationMode, count: number): number[] {
   const slots: number[] = [];
 
   switch (mode) {
-    case 'vividMuted': {
-      // 25% high chroma accent, 75% low chroma background
-      const accentCount = Math.max(1, Math.round(count * 0.25));
-      const bgCount = count - accentCount;
-      for (let i = 0; i < accentCount; i++) {
-        slots.push(rand(0.15, 0.25));
-      }
-      for (let i = 0; i < bgCount; i++) {
-        slots.push(rand(0.02, 0.08));
-      }
-      break;
-    }
-    case 'satScale': {
-      // Even distribution from low to high chroma
-      for (let i = 0; i < count; i++) {
-        const base = 0.02 + (0.24 - 0.02) * (i / (count - 1 || 1));
-        slots.push(base + rand(-0.01, 0.01));
-      }
-      break;
-    }
-    case 'uniform': {
-      // One chroma level dominates
-      const level = rand(0.06, 0.18);
-      for (let i = 0; i < count; i++) {
-        slots.push(Math.max(0.01, level + rand(-0.03, 0.03)));
-      }
-      break;
-    }
     case 'sat603010': {
       // 60% low chroma, 30% mid chroma, 10% high chroma
       const lowCount = Math.max(1, Math.round(count * 0.6));
@@ -132,10 +104,26 @@ function generateChromaSlots(mode: SaturationMode, count: number): number[] {
       }
       break;
     }
-    case 'chaotic': {
-      // Random chroma with big jumps
+    case 'satHighContrast': {
+      // Random chroma with big jumps — high contrast
       for (let i = 0; i < count; i++) {
         slots.push(rand(0.01, 0.26));
+      }
+      break;
+    }
+    case 'satLowContrast': {
+      // One chroma level dominates — low contrast
+      const level = rand(0.06, 0.18);
+      for (let i = 0; i < count; i++) {
+        slots.push(Math.max(0.01, level + rand(-0.03, 0.03)));
+      }
+      break;
+    }
+    case 'satScale': {
+      // Even distribution from low to high chroma
+      for (let i = 0; i < count; i++) {
+        const base = 0.02 + (0.24 - 0.02) * (i / (count - 1 || 1));
+        slots.push(base + rand(-0.01, 0.01));
       }
       break;
     }

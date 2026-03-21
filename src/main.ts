@@ -151,10 +151,9 @@ function render() {
               <span class="random-label">${t('saturation')}</span>
               <div class="toggle-group" data-random="satMode">
                 <button class="toggle-btn${state.randomSatMode === 'sat603010' ? ' active' : ''}" data-value="sat603010">${t('sat603010')}</button>
-                <button class="toggle-btn${state.randomSatMode === 'vividMuted' ? ' active' : ''}" data-value="vividMuted">${t('satVividMuted')}</button>
-                <button class="toggle-btn${state.randomSatMode === 'uniform' ? ' active' : ''}" data-value="uniform">${t('satUniform')}</button>
+                <button class="toggle-btn${state.randomSatMode === 'satHighContrast' ? ' active' : ''}" data-value="satHighContrast">${t('satHighContrast')}</button>
+                <button class="toggle-btn${state.randomSatMode === 'satLowContrast' ? ' active' : ''}" data-value="satLowContrast">${t('satLowContrast')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'satScale' ? ' active' : ''}" data-value="satScale">${t('satScale')}</button>
-                <button class="toggle-btn${state.randomSatMode === 'chaotic' ? ' active' : ''}" data-value="chaotic">${t('satChaotic')}</button>
               </div>
             </div>
             <div class="random-row">
