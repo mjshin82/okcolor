@@ -91,13 +91,15 @@ export function mapPaletteByHue(
 
   if (mode === 'hueOnly') {
     const mapping = new Map<string, RGB>();
+    // Find closest target by hue distance only
     for (const orig of origEntries) {
       let bestIdx = 0;
-      let bestDist = Infinity;
+      let bestHueDist = Infinity;
       for (let ti = 0; ti < targetEntries.length; ti++) {
-        const dist = oklchDistance(orig.oklch, targetEntries[ti].oklch);
-        if (dist < bestDist) {
-          bestDist = dist;
+        let dh = Math.abs(orig.oklch.h - targetEntries[ti].oklch.h);
+        if (dh > 180) dh = 360 - dh;
+        if (dh < bestHueDist) {
+          bestHueDist = dh;
           bestIdx = ti;
         }
       }
