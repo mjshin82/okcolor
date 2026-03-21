@@ -43,10 +43,10 @@ let state: {
   selectedPreset: 2,
   paletteColors: null,
   paletteMapping: null,
-  randomValueMode: 'valueScale',
-  randomHueMode: 'complementary',
-  randomSatMode: 'satScale',
-  randomSize: 16,
+  randomValueMode: 'rule603010',
+  randomHueMode: 'analogous',
+  randomSatMode: 'uniform',
+  randomSize: 32,
   mappingMode: 'nearest' as MappingMode,
 };
 
@@ -127,17 +127,17 @@ function render() {
             <div class="random-row">
               <span class="random-label">${t('valueMode')}</span>
               <div class="toggle-group" data-random="valueMode">
+                <button class="toggle-btn${state.randomValueMode === 'rule603010' ? ' active' : ''}" data-value="rule603010">${t('rule603010')}</button>
                 <button class="toggle-btn${state.randomValueMode === 'highContrast' ? ' active' : ''}" data-value="highContrast">${t('highContrast')}</button>
                 <button class="toggle-btn${state.randomValueMode === 'lowContrast' ? ' active' : ''}" data-value="lowContrast">${t('lowContrast')}</button>
                 <button class="toggle-btn${state.randomValueMode === 'valueScale' ? ' active' : ''}" data-value="valueScale">${t('valueScale')}</button>
-                <button class="toggle-btn${state.randomValueMode === 'rule603010' ? ' active' : ''}" data-value="rule603010">${t('rule603010')}</button>
               </div>
             </div>
             <div class="random-row">
               <span class="random-label">${t('harmony')}</span>
               <div class="toggle-group" data-random="hueMode">
-                <button class="toggle-btn${state.randomHueMode === 'complementary' ? ' active' : ''}" data-value="complementary">${t('hueComplementary')}</button>
                 <button class="toggle-btn${state.randomHueMode === 'analogous' ? ' active' : ''}" data-value="analogous">${t('hueAnalogous')}</button>
+                <button class="toggle-btn${state.randomHueMode === 'complementary' ? ' active' : ''}" data-value="complementary">${t('hueComplementary')}</button>
                 <button class="toggle-btn${state.randomHueMode === 'triadic' ? ' active' : ''}" data-value="triadic">${t('hueTriadic')}</button>
                 <button class="toggle-btn${state.randomHueMode === 'splitComplementary' ? ' active' : ''}" data-value="splitComplementary">${t('hueSplitComp')}</button>
                 <button class="toggle-btn${state.randomHueMode === 'tetradic' ? ' active' : ''}" data-value="tetradic">${t('hueTetradic')}</button>
@@ -147,9 +147,9 @@ function render() {
             <div class="random-row">
               <span class="random-label">${t('saturation')}</span>
               <div class="toggle-group" data-random="satMode">
+                <button class="toggle-btn${state.randomSatMode === 'uniform' ? ' active' : ''}" data-value="uniform">${t('satUniform')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'vividMuted' ? ' active' : ''}" data-value="vividMuted">${t('satVividMuted')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'satScale' ? ' active' : ''}" data-value="satScale">${t('satScale')}</button>
-                <button class="toggle-btn${state.randomSatMode === 'uniform' ? ' active' : ''}" data-value="uniform">${t('satUniform')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'allLow' ? ' active' : ''}" data-value="allLow">${t('satAllLow')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'allHigh' ? ' active' : ''}" data-value="allHigh">${t('satAllHigh')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'chaotic' ? ' active' : ''}" data-value="chaotic">${t('satChaotic')}</button>
@@ -158,9 +158,9 @@ function render() {
             <div class="random-row">
               <span class="random-label">${t('colors')}</span>
               <div class="toggle-group" data-random="size">
+                <button class="toggle-btn${state.randomSize === 32 ? ' active' : ''}" data-value="32">32</button>
                 <button class="toggle-btn${state.randomSize === 8 ? ' active' : ''}" data-value="8">8</button>
                 <button class="toggle-btn${state.randomSize === 16 ? ' active' : ''}" data-value="16">16</button>
-                <button class="toggle-btn${state.randomSize === 32 ? ' active' : ''}" data-value="32">32</button>
                 <button class="toggle-btn${state.randomSize === 64 ? ' active' : ''}" data-value="64">64</button>
               </div>
             </div>
