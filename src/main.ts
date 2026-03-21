@@ -31,6 +31,7 @@ let state: {
   randomBrightness: Brightness;
   randomHueMode: HueMode;
   randomSize: PaletteSize;
+  diverseMapping: boolean;
 } = {
   entries: [],
   extractResult: null,
@@ -43,6 +44,7 @@ let state: {
   randomBrightness: 'normal',
   randomHueMode: 'diverse',
   randomSize: 16,
+  diverseMapping: false,
 };
 
 const app = document.getElementById('app')!;
@@ -154,6 +156,10 @@ function render() {
           <span id="custom-pal-name" class="pal-name"></span>
         </div>
       </div>
+      <label id="diverse-mapping-label" class="option-check-label" style="display:${state.paletteMode !== 'original' ? '' : 'none'}">
+        <input type="checkbox" id="diverse-mapping-check"${state.diverseMapping ? ' checked' : ''} />
+        ${t('diverseMapping')}
+      </label>
       <div id="palette-preview" class="palette-preview"></div>
     </section>
 
@@ -317,6 +323,16 @@ function bindEvents() {
     generateBtn.addEventListener('click', applyRandomPalette);
   }
 
+  // Diverse mapping checkbox
+  const diverseCheck = document.getElementById('diverse-mapping-check') as HTMLInputElement;
+  if (diverseCheck) {
+    diverseCheck.addEventListener('change', () => {
+      state.diverseMapping = diverseCheck.checked;
+      recomputePaletteMapping();
+      updateDisplay();
+    });
+  }
+
   // Custom .pal upload
   const palInput = document.getElementById('pal-file-input') as HTMLInputElement;
   if (palInput) {
@@ -343,6 +359,8 @@ function updatePaletteModeUI() {
   if (presetOpts) presetOpts.style.display = state.paletteMode === 'preset' ? '' : 'none';
   if (randomOpts) randomOpts.style.display = state.paletteMode === 'random' ? '' : 'none';
   if (customOpts) customOpts.style.display = state.paletteMode === 'custom' ? '' : 'none';
+  const diverseLabel = document.getElementById('diverse-mapping-label');
+  if (diverseLabel) diverseLabel.style.display = state.paletteMode !== 'original' ? '' : 'none';
 
   document.querySelectorAll<HTMLLabelElement>('.palette-radio').forEach((label) => {
     const input = label.querySelector('input') as HTMLInputElement;
@@ -422,7 +440,7 @@ function recomputePaletteMapping() {
     return;
   }
   const origColors = state.entries.map((e) => e.original);
-  state.paletteMapping = mapPaletteByHue(origColors, state.paletteColors);
+  state.paletteMapping = mapPaletteByHue(origColors, state.paletteColors, state.diverseMapping);
 }
 
 function renderPalettePreview(colors: RGB[] | null) {

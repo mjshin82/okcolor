@@ -322,7 +322,7 @@ body {
   background: var(--accent);
 }
 
-.exact-colors-label {
+.option-check-label {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -332,7 +332,7 @@ body {
   margin-bottom: 8px;
 }
 
-.exact-colors-label input[type='checkbox'] {
+.option-check-label input[type='checkbox'] {
   accent-color: var(--accent);
 }
 

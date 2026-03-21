@@ -68,13 +68,14 @@ function oklchDistance(a: OKLCH, b: OKLCH): number {
 /**
  * Map original image colors to a target palette.
  * Finds nearest target color by OKLCH Euclidean distance — only exact target RGB values are used.
+ *
+ * @param diverseMapping - If true, spread colors across target palette by penalizing overused targets.
  */
 export function mapPaletteByHue(
   originalColors: RGB[],
   targetColors: RGB[],
+  diverseMapping = false,
 ): Map<string, RGB> {
-  const mapping = new Map<string, RGB>();
-
   const origEntries: OklchEntry[] = originalColors.map((rgb) => ({
     rgb,
     oklch: rgbToOklch(rgb),
@@ -84,19 +85,98 @@ export function mapPaletteByHue(
     oklch: rgbToOklch(rgb),
   }));
 
-  for (const orig of origEntries) {
-    let bestIdx = 0;
-    let bestDist = Infinity;
-    for (let ti = 0; ti < targetEntries.length; ti++) {
-      const dist = oklchDistance(orig.oklch, targetEntries[ti].oklch);
-      if (dist < bestDist) {
-        bestDist = dist;
-        bestIdx = ti;
+  if (!diverseMapping) {
+    const mapping = new Map<string, RGB>();
+    for (const orig of origEntries) {
+      let bestIdx = 0;
+      let bestDist = Infinity;
+      for (let ti = 0; ti < targetEntries.length; ti++) {
+        const dist = oklchDistance(orig.oklch, targetEntries[ti].oklch);
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestIdx = ti;
+        }
       }
+      const key = `${orig.rgb.r},${orig.rgb.g},${orig.rgb.b}`;
+      mapping.set(key, targetEntries[bestIdx].rgb);
     }
-    const key = `${orig.rgb.r},${orig.rgb.g},${orig.rgb.b}`;
-    mapping.set(key, targetEntries[bestIdx].rgb);
+    return mapping;
   }
 
+  // Diverse mapping: build score table, assign greedily, penalize overused targets
+  const oLen = origEntries.length;
+  const tLen = targetEntries.length;
+
+  // Build 2D score table (higher = closer)
+  const scores: number[][] = [];
+  for (let oi = 0; oi < oLen; oi++) {
+    scores[oi] = [];
+    for (let ti = 0; ti < tLen; ti++) {
+      const dist = oklchDistance(origEntries[oi].oklch, targetEntries[ti].oklch);
+      // Invert distance to score: closer = higher score
+      scores[oi][ti] = 1 / (1 + dist);
+    }
+  }
+
+  const assignment = new Array<number>(oLen).fill(-1);
+  const targetUsage = new Array<number>(tLen).fill(0);
+  const assigned = new Set<number>();
+
+  const MAX_ROUNDS = 100;
+
+  for (let round = 0; round < MAX_ROUNDS; round++) {
+    // Find the highest score among unassigned originals
+    let bestOi = -1;
+    let bestTi = -1;
+    let bestScore = -Infinity;
+
+    for (let oi = 0; oi < oLen; oi++) {
+      if (assigned.has(oi)) continue;
+      for (let ti = 0; ti < tLen; ti++) {
+        if (scores[oi][ti] > bestScore) {
+          bestScore = scores[oi][ti];
+          bestOi = oi;
+          bestTi = ti;
+        }
+      }
+    }
+
+    if (bestOi === -1) break; // all assigned
+
+    // Check if this target is overused (+2 above min usage)
+    const minUsage = Math.min(...targetUsage);
+    if (targetUsage[bestTi] >= minUsage + 2) {
+      // Penalize this score by 10% and retry
+      scores[bestOi][bestTi] *= 0.9;
+      continue;
+    }
+
+    // Assign
+    assignment[bestOi] = bestTi;
+    targetUsage[bestTi]++;
+    assigned.add(bestOi);
+
+    if (assigned.size === oLen) break;
+  }
+
+  // Fallback: assign any remaining by simple nearest
+  for (let oi = 0; oi < oLen; oi++) {
+    if (assignment[oi] !== -1) continue;
+    let bestTi = 0;
+    let bestScore = -Infinity;
+    for (let ti = 0; ti < tLen; ti++) {
+      if (scores[oi][ti] > bestScore) {
+        bestScore = scores[oi][ti];
+        bestTi = ti;
+      }
+    }
+    assignment[oi] = bestTi;
+  }
+
+  const mapping = new Map<string, RGB>();
+  for (let oi = 0; oi < oLen; oi++) {
+    const key = `${origEntries[oi].rgb.r},${origEntries[oi].rgb.g},${origEntries[oi].rgb.b}`;
+    mapping.set(key, targetEntries[assignment[oi]].rgb);
+  }
   return mapping;
 }
