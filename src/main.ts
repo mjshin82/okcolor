@@ -37,8 +37,8 @@ let state: {
   extractResult: null,
   chromaOffset: 0,
   hueOffset: 0,
-  paletteMode: 'preset',
-  selectedPreset: 7,
+  paletteMode: 'original',
+  selectedPreset: 2,
   paletteColors: null,
   paletteMapping: null,
   randomBrightness: 'normal',
@@ -221,7 +221,11 @@ function render() {
     document.getElementById('controls')!.style.display = '';
     document.getElementById('content')!.style.display = '';
     document.getElementById('palette-selector')!.style.display = '';
-    if (state.paletteColors) renderPalettePreview(state.paletteColors);
+    if (state.paletteColors) {
+      renderPalettePreview(state.paletteColors);
+    } else if (state.paletteMode === 'original') {
+      renderPalettePreview(state.entries.map((e) => e.original));
+    }
     showContent();
   }
 }
@@ -393,7 +397,7 @@ async function applyPaletteSelection() {
   if (state.paletteMode === 'original') {
     state.paletteColors = null;
     state.paletteMapping = null;
-    renderPalettePreview(null);
+    renderPalettePreview(state.entries.map((e) => e.original));
     updateDisplay();
     return;
   }
@@ -656,4 +660,7 @@ async function loadSampleImage(url: string) {
 }
 
 render();
-loadSampleImage('/sample1.png').then(() => applyPaletteSelection());
+loadSampleImage('/sample1.png').then(() => {
+  // Show original palette on initial load
+  renderPalettePreview(state.entries.map((e) => e.original));
+});
