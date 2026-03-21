@@ -128,8 +128,8 @@ function render() {
           <div class="mapping-mode-inline">
             <span class="random-label">${t('mappingMode')}</span>
             <div class="toggle-group">
-              <button class="toggle-btn${state.mappingMode === 'nearest' ? ' active' : ''}" data-mapping="nearest">${t('mappingNearest')}</button>
               <button class="toggle-btn${state.mappingMode === 'diverse' ? ' active' : ''}" data-mapping="diverse">${t('mappingDiverse')}</button>
+              <button class="toggle-btn${state.mappingMode === 'nearest' ? ' active' : ''}" data-mapping="nearest">${t('mappingNearest')}</button>
               <button class="toggle-btn${state.mappingMode === 'hueOnly' ? ' active' : ''}" data-mapping="hueOnly">${t('mappingHueOnly')}</button>
             </div>
           </div>
@@ -179,8 +179,8 @@ function render() {
             <div class="random-row">
               <span class="random-label">${t('mappingMode')}</span>
               <div class="toggle-group">
-                <button class="toggle-btn${state.mappingMode === 'nearest' ? ' active' : ''}" data-mapping="nearest">${t('mappingNearest')}</button>
                 <button class="toggle-btn${state.mappingMode === 'diverse' ? ' active' : ''}" data-mapping="diverse">${t('mappingDiverse')}</button>
+                <button class="toggle-btn${state.mappingMode === 'nearest' ? ' active' : ''}" data-mapping="nearest">${t('mappingNearest')}</button>
                 <button class="toggle-btn${state.mappingMode === 'hueOnly' ? ' active' : ''}" data-mapping="hueOnly">${t('mappingHueOnly')}</button>
               </div>
             </div>
@@ -200,8 +200,8 @@ function render() {
           <div class="mapping-mode-inline">
             <span class="random-label">${t('mappingMode')}</span>
             <div class="toggle-group">
-              <button class="toggle-btn${state.mappingMode === 'nearest' ? ' active' : ''}" data-mapping="nearest">${t('mappingNearest')}</button>
               <button class="toggle-btn${state.mappingMode === 'diverse' ? ' active' : ''}" data-mapping="diverse">${t('mappingDiverse')}</button>
+              <button class="toggle-btn${state.mappingMode === 'nearest' ? ' active' : ''}" data-mapping="nearest">${t('mappingNearest')}</button>
               <button class="toggle-btn${state.mappingMode === 'hueOnly' ? ' active' : ''}" data-mapping="hueOnly">${t('mappingHueOnly')}</button>
             </div>
           </div>
