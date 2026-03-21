@@ -43,7 +43,7 @@ let state: {
   paletteColors: null,
   paletteMapping: null,
   randomBrightness: 'normal',
-  randomHueMode: 'diverse',
+  randomHueMode: 'complementary',
   randomSize: 16,
   mappingMode: 'nearest' as MappingMode,
 };
@@ -108,7 +108,7 @@ function render() {
         </label>
         <label class="palette-radio${state.paletteMode === 'random' ? ' active' : ''}">
           <input type="radio" name="palette-mode" value="random"${state.paletteMode === 'random' ? ' checked' : ''} />
-          ${t('random')}
+          ${t('generateTab')}
         </label>
         <label class="palette-radio${state.paletteMode === 'custom' ? ' active' : ''}">
           <input type="radio" name="palette-mode" value="custom"${state.paletteMode === 'custom' ? ' checked' : ''} />
@@ -131,11 +131,14 @@ function render() {
               </div>
             </div>
             <div class="random-group">
-              <span class="random-label">${t('hue')}</span>
+              <span class="random-label">${t('harmony')}</span>
               <div class="toggle-group" data-random="hueMode">
-                <button class="toggle-btn${state.randomHueMode === 'diverse' ? ' active' : ''}" data-value="diverse">${t('diverse')}</button>
-                <button class="toggle-btn${state.randomHueMode === 'complementary' ? ' active' : ''}" data-value="complementary">${t('complementary')}</button>
-                <button class="toggle-btn${state.randomHueMode === 'monotone' ? ' active' : ''}" data-value="monotone">${t('monotone')}</button>
+                <button class="toggle-btn${state.randomHueMode === 'complementary' ? ' active' : ''}" data-value="complementary">${t('hueComplementary')}</button>
+                <button class="toggle-btn${state.randomHueMode === 'analogous' ? ' active' : ''}" data-value="analogous">${t('hueAnalogous')}</button>
+                <button class="toggle-btn${state.randomHueMode === 'triadic' ? ' active' : ''}" data-value="triadic">${t('hueTriadic')}</button>
+                <button class="toggle-btn${state.randomHueMode === 'splitComplementary' ? ' active' : ''}" data-value="splitComplementary">${t('hueSplitComp')}</button>
+                <button class="toggle-btn${state.randomHueMode === 'tetradic' ? ' active' : ''}" data-value="tetradic">${t('hueTetradic')}</button>
+                <button class="toggle-btn${state.randomHueMode === 'monochromatic' ? ' active' : ''}" data-value="monochromatic">${t('hueMonochromatic')}</button>
               </div>
             </div>
             <div class="random-group">

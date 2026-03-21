@@ -2,7 +2,7 @@ import type { RGB } from './color';
 import { oklchToRgb } from './color';
 
 export type Brightness = 'bright' | 'normal' | 'muted';
-export type HueMode = 'diverse' | 'complementary' | 'monotone';
+export type HueMode = 'complementary' | 'analogous' | 'triadic' | 'splitComplementary' | 'tetradic' | 'monochromatic';
 export type PaletteSize = 8 | 16 | 32 | 64;
 
 interface GenerateOptions {
@@ -11,14 +11,12 @@ interface GenerateOptions {
   size: PaletteSize;
 }
 
-// Chroma ranges per brightness level
 const CHROMA_RANGE: Record<Brightness, [number, number]> = {
   bright: [0.14, 0.24],
   normal: [0.06, 0.16],
   muted: [0.02, 0.08],
 };
 
-// Lightness ranges per brightness level
 const LIGHTNESS_RANGE: Record<Brightness, [number, number]> = {
   bright: [0.25, 0.95],
   normal: [0.15, 0.90],
@@ -30,51 +28,55 @@ function rand(min: number, max: number): number {
 }
 
 /**
- * Generate hue anchors based on hue mode.
- * Returns base hue values that color slots will be distributed around.
+ * Generate hue anchors based on color harmony mode.
+ * Each mode picks key hues, then distributes `count` colors around them with spread.
  */
 function generateHueAnchors(mode: HueMode, count: number): number[] {
-  const hues: number[] = [];
+  const baseHue = Math.random() * 360;
+  let keyHues: number[];
+  let spread: number;
 
   switch (mode) {
-    case 'diverse': {
-      // Evenly distribute across 360° with small jitter
-      const step = 360 / count;
-      const offset = Math.random() * 360;
-      for (let i = 0; i < count; i++) {
-        hues.push((offset + i * step + rand(-step * 0.2, step * 0.2) + 360) % 360);
-      }
+    case 'complementary':
+      // Two opposite hues
+      keyHues = [baseHue, (baseHue + 180) % 360];
+      spread = 25;
       break;
-    }
-    case 'complementary': {
-      // Two opposite hue anchors, distribute colors between them
-      const baseHue = Math.random() * 360;
-      const oppositeHue = (baseHue + 180) % 360;
-      const spread = 30; // ±30° around each anchor
-      for (let i = 0; i < count; i++) {
-        const anchor = i % 2 === 0 ? baseHue : oppositeHue;
-        hues.push((anchor + rand(-spread, spread) + 360) % 360);
-      }
+    case 'analogous':
+      // One region, 60° range
+      keyHues = [baseHue];
+      spread = 30;
       break;
-    }
-    case 'monotone': {
-      // Narrow hue range (±20° from a single anchor)
-      const baseHue = Math.random() * 360;
-      const spread = 20;
-      for (let i = 0; i < count; i++) {
-        hues.push((baseHue + rand(-spread, spread) + 360) % 360);
-      }
+    case 'triadic':
+      // Three hues at 120° intervals
+      keyHues = [baseHue, (baseHue + 120) % 360, (baseHue + 240) % 360];
+      spread = 20;
       break;
-    }
+    case 'splitComplementary':
+      // Base + two flanking the complement (±30° from 180°)
+      keyHues = [baseHue, (baseHue + 150) % 360, (baseHue + 210) % 360];
+      spread = 20;
+      break;
+    case 'tetradic':
+      // Four hues at 90° intervals
+      keyHues = [baseHue, (baseHue + 90) % 360, (baseHue + 180) % 360, (baseHue + 270) % 360];
+      spread = 15;
+      break;
+    case 'monochromatic':
+      // Single hue, very narrow range
+      keyHues = [baseHue];
+      spread = 15;
+      break;
   }
 
+  const hues: number[] = [];
+  for (let i = 0; i < count; i++) {
+    const anchor = keyHues[i % keyHues.length];
+    hues.push((anchor + rand(-spread, spread) + 360) % 360);
+  }
   return hues;
 }
 
-/**
- * Check minimum distance in OKLCH space between a candidate and existing colors.
- * Uses weighted Euclidean distance on L, C, H (hue as angular distance).
- */
 function minDistance(
   candidate: { l: number; c: number; h: number },
   existing: { l: number; c: number; h: number }[],
@@ -91,9 +93,6 @@ function minDistance(
   return minDist;
 }
 
-/**
- * Generate a random palette in OKLCH space with minimum-distance guarantees.
- */
 export function generateRandomPalette(options: GenerateOptions): RGB[] {
   const { brightness, hueMode, size } = options;
   const [cMin, cMax] = CHROMA_RANGE[brightness];
@@ -101,20 +100,18 @@ export function generateRandomPalette(options: GenerateOptions): RGB[] {
 
   const hueAnchors = generateHueAnchors(hueMode, size);
 
-  // Include some near-achromatic colors for palette variety
   const achromaticCount = Math.max(1, Math.floor(size * 0.15));
   const chromaticCount = size - achromaticCount;
 
   const selected: { l: number; c: number; h: number }[] = [];
   const MAX_ATTEMPTS = 500;
 
-  // Pre-assign evenly spaced lightness slots for chromatic colors, then jitter
+  // Pre-assign evenly spaced lightness slots, shuffled
   const lSlots: number[] = [];
   for (let i = 0; i < chromaticCount; i++) {
     const base = lMin + (lMax - lMin) * (i / (chromaticCount - 1 || 1));
     lSlots.push(base);
   }
-  // Shuffle so hue anchors don't always pair with the same lightness
   for (let i = lSlots.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [lSlots[i], lSlots[j]] = [lSlots[j], lSlots[i]];
@@ -124,8 +121,6 @@ export function generateRandomPalette(options: GenerateOptions): RGB[] {
   for (let i = 0; i < chromaticCount; i++) {
     let bestCandidate = { l: 0, c: 0, h: 0 };
     let bestDist = -1;
-
-    // Wide jitter — full range allowed, slot is just a starting bias
     const lJitter = (lMax - lMin) * 0.4;
 
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
@@ -150,7 +145,7 @@ export function generateRandomPalette(options: GenerateOptions): RGB[] {
     selected.push(bestCandidate);
   }
 
-  // Generate achromatic / low-chroma colors spread across full lightness range
+  // Generate achromatic / low-chroma colors
   for (let i = 0; i < achromaticCount; i++) {
     const l = lMin + (lMax - lMin) * ((i + 0.5) / achromaticCount);
     const c = rand(0, cMin * 0.3);
@@ -158,18 +153,16 @@ export function generateRandomPalette(options: GenerateOptions): RGB[] {
     selected.push({ l, c, h });
   }
 
-  // Order by nearest-neighbor chain, starting from darkest color
+  // Order by nearest-neighbor chain, starting from darkest
   const ordered: typeof selected = [];
   const remaining = [...selected];
 
-  // Start with the darkest color (lowest L)
   let startIdx = 0;
   for (let i = 1; i < remaining.length; i++) {
     if (remaining[i].l < remaining[startIdx].l) startIdx = i;
   }
   ordered.push(remaining.splice(startIdx, 1)[0]);
 
-  // Greedily pick the closest remaining color each step
   while (remaining.length > 0) {
     const last = ordered[ordered.length - 1];
     let bestIdx = 0;
