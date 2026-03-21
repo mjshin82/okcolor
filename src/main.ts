@@ -207,7 +207,6 @@ function render() {
           </div>
         </div>
       </div>
-      <div id="palette-preview" class="palette-preview"></div>
     </section>
 
     <section class="controls-section" id="controls" style="display:none">
@@ -542,20 +541,8 @@ function recomputePaletteMapping() {
   state.paletteMapping = mapPaletteByHue(origColors, targetColors, state.mappingMode);
 }
 
-function renderPalettePreview(colors: RGB[] | null) {
-  const container = document.getElementById('palette-preview');
-  if (!container) return;
-  if (!colors) {
-    container.innerHTML = '';
-    return;
-  }
-  const swatches = colors
-    .map((c) => {
-      const hex = rgbToHex(c);
-      return `<div class="palette-preview-swatch" style="background:${hex}" title="${hex}"></div>`;
-    })
-    .join('');
-  container.innerHTML = swatches;
+function renderPalettePreview(_colors: RGB[] | null) {
+  // No longer rendered — palette shown under each image instead
 }
 
 async function handleFileChange(e: Event) {
