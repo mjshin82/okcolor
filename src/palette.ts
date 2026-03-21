@@ -151,7 +151,7 @@ export function mapPaletteByHue(
   const targetUsage = new Array<number>(tLen).fill(0);
   const assigned = new Set<number>();
 
-  const MAX_ROUNDS = 100;
+  const MAX_ROUNDS = oLen * 10;
 
   for (let round = 0; round < MAX_ROUNDS; round++) {
     // Find the highest score among unassigned originals
