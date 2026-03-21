@@ -123,8 +123,8 @@ function render() {
           <a id="preset-link" class="preset-link" href="${PRESET_PALETTES[state.selectedPreset].url}" target="_blank" rel="noopener noreferrer">${PRESET_PALETTES[state.selectedPreset].name} ${t('onLospec')} ↗</a>
         </div>
         <div id="random-options" style="display:${state.paletteMode === 'random' ? '' : 'none'}">
-          <div class="random-controls">
-            <div class="random-group">
+          <div class="random-controls-vertical">
+            <div class="random-row">
               <span class="random-label">${t('valueMode')}</span>
               <div class="toggle-group" data-random="valueMode">
                 <button class="toggle-btn${state.randomValueMode === 'highContrast' ? ' active' : ''}" data-value="highContrast">${t('highContrast')}</button>
@@ -133,7 +133,7 @@ function render() {
                 <button class="toggle-btn${state.randomValueMode === 'rule603010' ? ' active' : ''}" data-value="rule603010">${t('rule603010')}</button>
               </div>
             </div>
-            <div class="random-group">
+            <div class="random-row">
               <span class="random-label">${t('harmony')}</span>
               <div class="toggle-group" data-random="hueMode">
                 <button class="toggle-btn${state.randomHueMode === 'complementary' ? ' active' : ''}" data-value="complementary">${t('hueComplementary')}</button>
@@ -144,7 +144,7 @@ function render() {
                 <button class="toggle-btn${state.randomHueMode === 'monochromatic' ? ' active' : ''}" data-value="monochromatic">${t('hueMonochromatic')}</button>
               </div>
             </div>
-            <div class="random-group">
+            <div class="random-row">
               <span class="random-label">${t('saturation')}</span>
               <div class="toggle-group" data-random="satMode">
                 <button class="toggle-btn${state.randomSatMode === 'vividMuted' ? ' active' : ''}" data-value="vividMuted">${t('satVividMuted')}</button>
@@ -155,7 +155,7 @@ function render() {
                 <button class="toggle-btn${state.randomSatMode === 'chaotic' ? ' active' : ''}" data-value="chaotic">${t('satChaotic')}</button>
               </div>
             </div>
-            <div class="random-group">
+            <div class="random-row">
               <span class="random-label">${t('colors')}</span>
               <div class="toggle-group" data-random="size">
                 <button class="toggle-btn${state.randomSize === 8 ? ' active' : ''}" data-value="8">8</button>
@@ -164,7 +164,7 @@ function render() {
                 <button class="toggle-btn${state.randomSize === 64 ? ' active' : ''}" data-value="64">64</button>
               </div>
             </div>
-            <button id="random-generate-btn" class="generate-btn">${t('generate')}</button>
+            <button id="random-generate-btn" class="generate-btn-large">${t('generate')}</button>
           </div>
         </div>
         <div id="custom-options" style="display:${state.paletteMode === 'custom' ? '' : 'none'}">

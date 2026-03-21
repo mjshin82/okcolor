@@ -22,7 +22,7 @@ body {
 }
 
 #app {
-  max-width: 1200px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 24px;
 }
@@ -246,23 +246,23 @@ body {
   margin-left: 8px;
 }
 
-.random-controls {
+.random-controls-vertical {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.random-group {
+.random-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .random-label {
   font-size: 0.8rem;
   color: var(--text-dim);
-  min-width: fit-content;
+  min-width: 70px;
+  flex-shrink: 0;
 }
 
 .toggle-group {
@@ -307,19 +307,25 @@ body {
   border-left: none;
 }
 
-.generate-btn {
-  padding: 6px 16px;
-  background: var(--surface-alt);
-  color: var(--text);
+.generate-btn-large {
+  padding: 12px 32px;
+  background: var(--accent);
+  color: white;
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
-  font-size: 0.85rem;
-  transition: background 0.2s;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: 4px;
 }
 
-.generate-btn:hover {
-  background: var(--accent);
+.generate-btn-large:hover {
+  background: #d63450;
+}
+
+.generate-btn-large:active {
+  transform: scale(0.98);
 }
 
 .mapping-mode-group {
