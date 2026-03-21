@@ -3,7 +3,7 @@ import { oklchToRgb } from './color';
 
 export type Brightness = 'bright' | 'normal' | 'muted';
 export type HueMode = 'diverse' | 'complementary' | 'monotone';
-export type PaletteSize = 8 | 16 | 32;
+export type PaletteSize = 8 | 16 | 32 | 64;
 
 interface GenerateOptions {
   brightness: Brightness;

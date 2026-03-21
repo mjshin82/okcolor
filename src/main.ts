@@ -143,6 +143,7 @@ function render() {
                 <button class="toggle-btn${state.randomSize === 8 ? ' active' : ''}" data-value="8">8</button>
                 <button class="toggle-btn${state.randomSize === 16 ? ' active' : ''}" data-value="16">16</button>
                 <button class="toggle-btn${state.randomSize === 32 ? ' active' : ''}" data-value="32">32</button>
+                <button class="toggle-btn${state.randomSize === 64 ? ' active' : ''}" data-value="64">64</button>
               </div>
             </div>
             <button id="random-generate-btn" class="generate-btn">${t('generate')}</button>
