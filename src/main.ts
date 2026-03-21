@@ -81,7 +81,6 @@ function render() {
           <img src="/sample2.png" class="sample-thumb" data-sample="2" alt="Sample 2" />
           <img src="/sample3.png" class="sample-thumb" data-sample="3" alt="Sample 3" />
           <img src="/sample4.png" class="sample-thumb" data-sample="4" alt="Sample 4" />
-          <img src="/sample5.png" class="sample-thumb" data-sample="5" alt="Sample 5" />
         </div>
       </div>
       <label class="upload-label" for="file-input">
