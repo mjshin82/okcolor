@@ -132,7 +132,7 @@ export function mapPaletteByHue(
     return mapping;
   }
 
-  // Diverse mapping: build score table, assign greedily, penalize overused targets
+  // Diverse mapping: maximize unique target usage
   const oLen = origEntries.length;
   const tLen = targetEntries.length;
 
@@ -142,7 +142,6 @@ export function mapPaletteByHue(
     scores[oi] = [];
     for (let ti = 0; ti < tLen; ti++) {
       const dist = oklchDistance(origEntries[oi].oklch, targetEntries[ti].oklch);
-      // Invert distance to score: closer = higher score
       scores[oi][ti] = 1 / (1 + dist);
     }
   }
@@ -151,10 +150,13 @@ export function mapPaletteByHue(
   const targetUsage = new Array<number>(tLen).fill(0);
   const assigned = new Set<number>();
 
-  const MAX_ROUNDS = oLen * 10;
+  // When target palette has enough colors, enforce unique assignments first
+  const canBeUnique = tLen >= oLen;
+  const usedTargets = new Set<number>();
+
+  const MAX_ROUNDS = oLen * 20;
 
   for (let round = 0; round < MAX_ROUNDS; round++) {
-    // Find the highest score among unassigned originals
     let bestOi = -1;
     let bestTi = -1;
     let bestScore = -Infinity;
@@ -162,6 +164,8 @@ export function mapPaletteByHue(
     for (let oi = 0; oi < oLen; oi++) {
       if (assigned.has(oi)) continue;
       for (let ti = 0; ti < tLen; ti++) {
+        // Skip already-used targets when unique mapping is possible
+        if (canBeUnique && usedTargets.has(ti)) continue;
         if (scores[oi][ti] > bestScore) {
           bestScore = scores[oi][ti];
           bestOi = oi;
@@ -170,25 +174,26 @@ export function mapPaletteByHue(
       }
     }
 
-    if (bestOi === -1) break; // all assigned
+    if (bestOi === -1) break;
 
-    // Check if this target is overused (+1 above min usage)
-    const minUsage = Math.min(...targetUsage);
-    if (targetUsage[bestTi] >= minUsage + 1) {
-      // Penalize this score by 10% and retry
-      scores[bestOi][bestTi] *= 0.95;
-      continue;
+    // When targets < originals, apply usage penalty
+    if (!canBeUnique) {
+      const minUsage = Math.min(...targetUsage);
+      if (targetUsage[bestTi] >= minUsage + 1) {
+        scores[bestOi][bestTi] *= 0.95;
+        continue;
+      }
     }
 
-    // Assign
     assignment[bestOi] = bestTi;
     targetUsage[bestTi]++;
+    usedTargets.add(bestTi);
     assigned.add(bestOi);
 
     if (assigned.size === oLen) break;
   }
 
-  // Fallback: assign any remaining by simple nearest
+  // Fallback: assign any remaining by simple nearest (shouldn't happen often)
   for (let oi = 0; oi < oLen; oi++) {
     if (assignment[oi] !== -1) continue;
     let bestTi = 0;
