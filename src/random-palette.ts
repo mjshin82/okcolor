@@ -229,7 +229,7 @@ function generateHueAnchors(mode: HueMode, count: number, baseHue: number): numb
       break;
     case 'monochromatic':
       keyHues = [baseHue];
-      spread = 15;
+      spread = 7;
       break;
   }
 
