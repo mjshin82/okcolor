@@ -212,9 +212,9 @@ function generateHueAnchors(mode: HueMode, count: number, baseHue: number): numb
       spread = 25;
       break;
     case 'analogous':
-      // 3 anchors within 90° range, each with nearby spread
-      keyHues = [baseHue, (baseHue + 45) % 360, (baseHue + 90) % 360];
-      spread = 15;
+      // 3 anchors within 150° range, each with nearby spread
+      keyHues = [baseHue, (baseHue + 75) % 360, (baseHue + 150) % 360];
+      spread = 25;
       break;
     case 'triadic':
       keyHues = [baseHue, (baseHue + 120) % 360, (baseHue + 240) % 360];
