@@ -162,8 +162,7 @@ function render() {
                 <button class="toggle-btn${state.randomSatMode === 'vividMuted' ? ' active' : ''}" data-value="vividMuted">${t('satVividMuted')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'uniform' ? ' active' : ''}" data-value="uniform">${t('satUniform')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'satScale' ? ' active' : ''}" data-value="satScale">${t('satScale')}</button>
-                <button class="toggle-btn${state.randomSatMode === 'allLow' ? ' active' : ''}" data-value="allLow">${t('satAllLow')}</button>
-                <button class="toggle-btn${state.randomSatMode === 'allHigh' ? ' active' : ''}" data-value="allHigh">${t('satAllHigh')}</button>
+                <button class="toggle-btn${state.randomSatMode === 'sat603010' ? ' active' : ''}" data-value="sat603010">${t('sat603010')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'chaotic' ? ' active' : ''}" data-value="chaotic">${t('satChaotic')}</button>
               </div>
             </div>

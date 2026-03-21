@@ -3,7 +3,7 @@ import { oklchToRgb, rgbToOklch } from './color';
 
 export type ValueMode = 'highContrast' | 'lowContrast' | 'valueScale' | 'rule603010';
 export type HueMode = 'complementary' | 'analogous' | 'triadic' | 'splitComplementary' | 'tetradic' | 'monochromatic';
-export type SaturationMode = 'vividMuted' | 'satScale' | 'uniform' | 'allLow' | 'allHigh' | 'chaotic';
+export type SaturationMode = 'vividMuted' | 'satScale' | 'uniform' | 'sat603010' | 'chaotic';
 export type PaletteSize = 8 | 16 | 32 | 64;
 
 interface GenerateOptions {
@@ -116,17 +116,19 @@ function generateChromaSlots(mode: SaturationMode, count: number): number[] {
       }
       break;
     }
-    case 'allLow': {
-      // All low chroma — vintage, muted
-      for (let i = 0; i < count; i++) {
+    case 'sat603010': {
+      // 60% low chroma, 30% mid chroma, 10% high chroma
+      const lowCount = Math.max(1, Math.round(count * 0.6));
+      const midCount = Math.max(1, Math.round(count * 0.3));
+      const highCount = Math.max(1, count - lowCount - midCount);
+      for (let i = 0; i < lowCount; i++) {
         slots.push(rand(0.01, 0.06));
       }
-      break;
-    }
-    case 'allHigh': {
-      // All high chroma — vivid
-      for (let i = 0; i < count; i++) {
-        slots.push(rand(0.14, 0.26));
+      for (let i = 0; i < midCount; i++) {
+        slots.push(rand(0.07, 0.14));
+      }
+      for (let i = 0; i < highCount; i++) {
+        slots.push(rand(0.15, 0.26));
       }
       break;
     }
