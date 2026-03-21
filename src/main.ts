@@ -151,6 +151,7 @@ function render() {
               <span class="random-label">${t('saturation')}</span>
               <div class="toggle-group" data-random="satMode">
                 <button class="toggle-btn${state.randomSatMode === 'sat603010' ? ' active' : ''}" data-value="sat603010">${t('sat603010')}</button>
+                <button class="toggle-btn${state.randomSatMode === 'sat8020' ? ' active' : ''}" data-value="sat8020">${t('rule8020')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'satHighContrast' ? ' active' : ''}" data-value="satHighContrast">${t('satHighContrast')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'satLowContrast' ? ' active' : ''}" data-value="satLowContrast">${t('satLowContrast')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'satScale' ? ' active' : ''}" data-value="satScale">${t('satScale')}</button>
@@ -160,6 +161,7 @@ function render() {
               <span class="random-label">${t('valueMode')}</span>
               <div class="toggle-group" data-random="valueMode">
                 <button class="toggle-btn${state.randomValueMode === 'rule603010' ? ' active' : ''}" data-value="rule603010">${t('rule603010')}</button>
+                <button class="toggle-btn${state.randomValueMode === 'rule8020' ? ' active' : ''}" data-value="rule8020">${t('rule8020')}</button>
                 <button class="toggle-btn${state.randomValueMode === 'highContrast' ? ' active' : ''}" data-value="highContrast">${t('highContrast')}</button>
                 <button class="toggle-btn${state.randomValueMode === 'lowContrast' ? ' active' : ''}" data-value="lowContrast">${t('lowContrast')}</button>
                 <button class="toggle-btn${state.randomValueMode === 'valueScale' ? ' active' : ''}" data-value="valueScale">${t('valueScale')}</button>

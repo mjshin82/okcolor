@@ -1,9 +1,9 @@
 import type { RGB } from './color';
 import { oklchToRgb, rgbToOklch } from './color';
 
-export type ValueMode = 'highContrast' | 'lowContrast' | 'valueScale' | 'rule603010';
+export type ValueMode = 'rule603010' | 'rule8020' | 'highContrast' | 'lowContrast' | 'valueScale';
 export type HueMode = 'complementary' | 'analogous' | 'triadic' | 'splitComplementary' | 'tetradic' | 'monochromatic';
-export type SaturationMode = 'sat603010' | 'satHighContrast' | 'satLowContrast' | 'satScale';
+export type SaturationMode = 'sat603010' | 'sat8020' | 'satHighContrast' | 'satLowContrast' | 'satScale';
 export type PaletteSize = 8 | 16 | 32 | 64;
 
 interface GenerateOptions {
@@ -70,6 +70,18 @@ function generateLightnessSlots(mode: ValueMode, count: number): number[] {
       }
       break;
     }
+    case 'rule8020': {
+      // 80% light (dominant), 20% dark (accent)
+      const majorCount = Math.max(1, Math.round(count * 0.8));
+      const minorCount = Math.max(1, count - majorCount);
+      for (let i = 0; i < majorCount; i++) {
+        slots.push(rand(0.55, 0.92));
+      }
+      for (let i = 0; i < minorCount; i++) {
+        slots.push(rand(0.10, 0.35));
+      }
+      break;
+    }
   }
 
   // Shuffle so hue anchors don't always pair with the same lightness
@@ -101,6 +113,18 @@ function generateChromaSlots(mode: SaturationMode, count: number): number[] {
       }
       for (let i = 0; i < highCount; i++) {
         slots.push(rand(0.15, 0.26));
+      }
+      break;
+    }
+    case 'sat8020': {
+      // 80% low chroma (dominant), 20% high chroma (accent)
+      const majorCount = Math.max(1, Math.round(count * 0.8));
+      const minorCount = Math.max(1, count - majorCount);
+      for (let i = 0; i < majorCount; i++) {
+        slots.push(rand(0.01, 0.08));
+      }
+      for (let i = 0; i < minorCount; i++) {
+        slots.push(rand(0.14, 0.26));
       }
       break;
     }
