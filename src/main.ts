@@ -175,6 +175,7 @@ function render() {
                 <button class="toggle-btn${state.randomSize === 16 ? ' active' : ''}" data-value="16">16</button>
                 <button class="toggle-btn${state.randomSize === 8 ? ' active' : ''}" data-value="8">8</button>
                 <button class="toggle-btn${state.randomSize === 128 ? ' active' : ''}" data-value="128">128</button>
+                <button class="toggle-btn${state.randomSize === 256 ? ' active' : ''}" data-value="256">256</button>
               </div>
             </div>
             <div class="random-row">
