@@ -147,7 +147,7 @@ export function mapPaletteByHue(
     const minUsage = Math.min(...targetUsage);
     if (targetUsage[bestTi] >= minUsage + 1) {
       // Penalize this score by 10% and retry
-      scores[bestOi][bestTi] *= 0.9;
+      scores[bestOi][bestTi] *= 0.95;
       continue;
     }
 
