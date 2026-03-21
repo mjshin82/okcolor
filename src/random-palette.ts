@@ -1,5 +1,5 @@
 import type { RGB } from './color';
-import { oklchToRgb } from './color';
+import { oklchToRgb, rgbToOklch } from './color';
 
 export type ValueMode = 'highContrast' | 'lowContrast' | 'valueScale' | 'rule603010';
 export type HueMode = 'complementary' | 'analogous' | 'triadic' | 'splitComplementary' | 'tetradic' | 'monochromatic';
@@ -11,6 +11,7 @@ interface GenerateOptions {
   hueMode: HueMode;
   saturationMode: SaturationMode;
   size: PaletteSize;
+  imageData?: ImageData;
 }
 
 function rand(min: number, max: number): number {
@@ -148,10 +149,46 @@ function generateChromaSlots(mode: SaturationMode, count: number): number[] {
 }
 
 /**
+ * Find the dominant hue from image pixel data.
+ * Divides hue into 60 buckets, scores each pixel's bucket (+2 self, +1 neighbors).
+ * Excludes very dark (L < 0.15) and very bright (L > 0.90) pixels.
+ */
+function findDominantHue(imageData: ImageData): number {
+  const BUCKETS = 60;
+  const scores = new Array(BUCKETS).fill(0);
+  const data = imageData.data;
+
+  for (let i = 0; i < data.length; i += 4) {
+    const rgb: RGB = { r: data[i], g: data[i + 1], b: data[i + 2] };
+    const oklch = rgbToOklch(rgb);
+
+    // Skip near-black and near-white
+    if (oklch.l < 0.15 || oklch.l > 0.90) continue;
+    // Skip achromatic
+    if (oklch.c < 0.02) continue;
+
+    const normH = oklch.h / 360; // 0-1
+    const idx = Math.floor(normH * BUCKETS) % BUCKETS;
+
+    scores[idx] += 2;
+    scores[(idx - 1 + BUCKETS) % BUCKETS] += 1;
+    scores[(idx + 1) % BUCKETS] += 1;
+  }
+
+  // Find bucket with highest score
+  let bestIdx = 0;
+  for (let i = 1; i < BUCKETS; i++) {
+    if (scores[i] > scores[bestIdx]) bestIdx = i;
+  }
+
+  // Convert bucket center back to hue degrees
+  return (bestIdx + 0.5) / BUCKETS * 360;
+}
+
+/**
  * Generate hue anchors based on color harmony mode.
  */
-function generateHueAnchors(mode: HueMode, count: number): number[] {
-  const baseHue = Math.random() * 360;
+function generateHueAnchors(mode: HueMode, count: number, baseHue: number): number[] {
   let keyHues: number[];
   let spread: number;
 
@@ -207,9 +244,20 @@ function minDistance(
 }
 
 export function generateRandomPalette(options: GenerateOptions): RGB[] {
-  const { valueMode, hueMode, saturationMode, size } = options;
+  const { valueMode, hueMode, saturationMode, size, imageData } = options;
 
-  const hueAnchors = generateHueAnchors(hueMode, size);
+  // Determine base hue from image analysis, fallback to random
+  let baseHue: number;
+  if (imageData) {
+    baseHue = findDominantHue(imageData);
+  } else {
+    baseHue = Math.random() * 360;
+  }
+
+  // Apply random hue offset for variety (±60°)
+  baseHue = (baseHue + rand(-60, 60) + 360) % 360;
+
+  const hueAnchors = generateHueAnchors(hueMode, size, baseHue);
   const lSlots = generateLightnessSlots(valueMode, size);
   const cSlots = generateChromaSlots(saturationMode, size);
 

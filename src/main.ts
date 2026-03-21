@@ -470,6 +470,7 @@ function applyRandomPalette() {
     hueMode: state.randomHueMode,
     saturationMode: state.randomSatMode,
     size: state.randomSize,
+    imageData: state.extractResult?.imageData,
   });
   state.paletteColors = colors;
   recomputePaletteMapping();
