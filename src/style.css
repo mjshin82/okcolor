@@ -322,18 +322,11 @@ body {
   background: var(--accent);
 }
 
-.option-check-label {
+.mapping-mode-group {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.85rem;
-  color: var(--text-dim);
-  cursor: pointer;
+  gap: 8px;
   margin-bottom: 8px;
-}
-
-.option-check-label input[type='checkbox'] {
-  accent-color: var(--accent);
 }
 
 .palette-preview {

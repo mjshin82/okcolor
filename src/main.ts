@@ -156,10 +156,13 @@ function render() {
           <span id="custom-pal-name" class="pal-name"></span>
         </div>
       </div>
-      <label id="diverse-mapping-label" class="option-check-label" style="display:${state.paletteMode !== 'original' ? '' : 'none'}">
-        <input type="checkbox" id="diverse-mapping-check"${state.diverseMapping ? ' checked' : ''} />
-        ${t('diverseMapping')}
-      </label>
+      <div id="mapping-mode-group" class="mapping-mode-group" style="display:${state.paletteMode !== 'original' ? '' : 'none'}">
+        <span class="random-label">${t('mappingMode')}</span>
+        <div class="toggle-group">
+          <button class="toggle-btn${!state.diverseMapping ? ' active' : ''}" id="mapping-nearest">${t('mappingNearest')}</button>
+          <button class="toggle-btn${state.diverseMapping ? ' active' : ''}" id="mapping-diverse">${t('mappingDiverse')}</button>
+        </div>
+      </div>
       <div id="palette-preview" class="palette-preview"></div>
     </section>
 
@@ -323,11 +326,21 @@ function bindEvents() {
     generateBtn.addEventListener('click', applyRandomPalette);
   }
 
-  // Diverse mapping checkbox
-  const diverseCheck = document.getElementById('diverse-mapping-check') as HTMLInputElement;
-  if (diverseCheck) {
-    diverseCheck.addEventListener('change', () => {
-      state.diverseMapping = diverseCheck.checked;
+  // Mapping mode toggle
+  const mappingNearest = document.getElementById('mapping-nearest');
+  const mappingDiverse = document.getElementById('mapping-diverse');
+  if (mappingNearest && mappingDiverse) {
+    mappingNearest.addEventListener('click', () => {
+      state.diverseMapping = false;
+      mappingNearest.classList.add('active');
+      mappingDiverse.classList.remove('active');
+      recomputePaletteMapping();
+      updateDisplay();
+    });
+    mappingDiverse.addEventListener('click', () => {
+      state.diverseMapping = true;
+      mappingDiverse.classList.add('active');
+      mappingNearest.classList.remove('active');
       recomputePaletteMapping();
       updateDisplay();
     });
@@ -359,8 +372,8 @@ function updatePaletteModeUI() {
   if (presetOpts) presetOpts.style.display = state.paletteMode === 'preset' ? '' : 'none';
   if (randomOpts) randomOpts.style.display = state.paletteMode === 'random' ? '' : 'none';
   if (customOpts) customOpts.style.display = state.paletteMode === 'custom' ? '' : 'none';
-  const diverseLabel = document.getElementById('diverse-mapping-label');
-  if (diverseLabel) diverseLabel.style.display = state.paletteMode !== 'original' ? '' : 'none';
+  const mappingGroup = document.getElementById('mapping-mode-group');
+  if (mappingGroup) mappingGroup.style.display = state.paletteMode !== 'original' ? '' : 'none';
 
   document.querySelectorAll<HTMLLabelElement>('.palette-radio').forEach((label) => {
     const input = label.querySelector('input') as HTMLInputElement;
