@@ -1,35 +1,87 @@
 import type { RGB } from './color';
 import { oklchToRgb } from './color';
 
-export type Brightness = 'bright' | 'normal' | 'muted';
+export type ValueMode = 'highContrast' | 'lowContrast' | 'valueScale' | 'rule603010';
 export type HueMode = 'complementary' | 'analogous' | 'triadic' | 'splitComplementary' | 'tetradic' | 'monochromatic';
 export type PaletteSize = 8 | 16 | 32 | 64;
 
 interface GenerateOptions {
-  brightness: Brightness;
+  valueMode: ValueMode;
   hueMode: HueMode;
   size: PaletteSize;
 }
 
-const CHROMA_RANGE: Record<Brightness, [number, number]> = {
-  bright: [0.14, 0.24],
-  normal: [0.06, 0.16],
-  muted: [0.02, 0.08],
-};
-
-const LIGHTNESS_RANGE: Record<Brightness, [number, number]> = {
-  bright: [0.25, 0.95],
-  normal: [0.15, 0.90],
-  muted: [0.10, 0.75],
-};
+const CHROMA_RANGE: [number, number] = [0.04, 0.22];
 
 function rand(min: number, max: number): number {
   return min + Math.random() * (max - min);
 }
 
 /**
+ * Generate lightness slots based on value mode.
+ */
+function generateLightnessSlots(mode: ValueMode, count: number): number[] {
+  const slots: number[] = [];
+
+  switch (mode) {
+    case 'highContrast': {
+      // 50/50 dark and light, strong separation
+      const darkCount = Math.ceil(count / 2);
+      const lightCount = count - darkCount;
+      for (let i = 0; i < darkCount; i++) {
+        slots.push(rand(0.10, 0.35));
+      }
+      for (let i = 0; i < lightCount; i++) {
+        slots.push(rand(0.70, 0.95));
+      }
+      break;
+    }
+    case 'lowContrast': {
+      // Clustered around mid-range lightness
+      const center = rand(0.40, 0.60);
+      const spread = 0.12;
+      for (let i = 0; i < count; i++) {
+        slots.push(Math.max(0.15, Math.min(0.85, center + rand(-spread, spread))));
+      }
+      break;
+    }
+    case 'valueScale': {
+      // Evenly distributed from dark to light
+      for (let i = 0; i < count; i++) {
+        const base = 0.10 + (0.90 - 0.10) * (i / (count - 1 || 1));
+        slots.push(base + rand(-0.03, 0.03));
+      }
+      break;
+    }
+    case 'rule603010': {
+      // 60% light (dominant), 30% mid (secondary), 10% dark (accent)
+      const lightCount = Math.max(1, Math.round(count * 0.6));
+      const midCount = Math.max(1, Math.round(count * 0.3));
+      const darkCount = Math.max(1, count - lightCount - midCount);
+      for (let i = 0; i < lightCount; i++) {
+        slots.push(rand(0.65, 0.92));
+      }
+      for (let i = 0; i < midCount; i++) {
+        slots.push(rand(0.35, 0.60));
+      }
+      for (let i = 0; i < darkCount; i++) {
+        slots.push(rand(0.10, 0.30));
+      }
+      break;
+    }
+  }
+
+  // Shuffle so hue anchors don't always pair with the same lightness
+  for (let i = slots.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [slots[i], slots[j]] = [slots[j], slots[i]];
+  }
+
+  return slots;
+}
+
+/**
  * Generate hue anchors based on color harmony mode.
- * Each mode picks key hues, then distributes `count` colors around them with spread.
  */
 function generateHueAnchors(mode: HueMode, count: number): number[] {
   const baseHue = Math.random() * 360;
@@ -38,32 +90,26 @@ function generateHueAnchors(mode: HueMode, count: number): number[] {
 
   switch (mode) {
     case 'complementary':
-      // Two opposite hues
       keyHues = [baseHue, (baseHue + 180) % 360];
       spread = 25;
       break;
     case 'analogous':
-      // One region, 60° range
       keyHues = [baseHue];
       spread = 30;
       break;
     case 'triadic':
-      // Three hues at 120° intervals
       keyHues = [baseHue, (baseHue + 120) % 360, (baseHue + 240) % 360];
       spread = 20;
       break;
     case 'splitComplementary':
-      // Base + two flanking the complement (±30° from 180°)
       keyHues = [baseHue, (baseHue + 150) % 360, (baseHue + 210) % 360];
       spread = 20;
       break;
     case 'tetradic':
-      // Four hues at 90° intervals
       keyHues = [baseHue, (baseHue + 90) % 360, (baseHue + 180) % 360, (baseHue + 270) % 360];
       spread = 15;
       break;
     case 'monochromatic':
-      // Single hue, very narrow range
       keyHues = [baseHue];
       spread = 15;
       break;
@@ -94,11 +140,11 @@ function minDistance(
 }
 
 export function generateRandomPalette(options: GenerateOptions): RGB[] {
-  const { brightness, hueMode, size } = options;
-  const [cMin, cMax] = CHROMA_RANGE[brightness];
-  const [lMin, lMax] = LIGHTNESS_RANGE[brightness];
+  const { valueMode, hueMode, size } = options;
+  const [cMin, cMax] = CHROMA_RANGE;
 
   const hueAnchors = generateHueAnchors(hueMode, size);
+  const lSlots = generateLightnessSlots(valueMode, size);
 
   const achromaticCount = Math.max(1, Math.floor(size * 0.15));
   const chromaticCount = size - achromaticCount;
@@ -106,25 +152,14 @@ export function generateRandomPalette(options: GenerateOptions): RGB[] {
   const selected: { l: number; c: number; h: number }[] = [];
   const MAX_ATTEMPTS = 500;
 
-  // Pre-assign evenly spaced lightness slots, shuffled
-  const lSlots: number[] = [];
-  for (let i = 0; i < chromaticCount; i++) {
-    const base = lMin + (lMax - lMin) * (i / (chromaticCount - 1 || 1));
-    lSlots.push(base);
-  }
-  for (let i = lSlots.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [lSlots[i], lSlots[j]] = [lSlots[j], lSlots[i]];
-  }
-
   // Generate chromatic colors with best-candidate selection
   for (let i = 0; i < chromaticCount; i++) {
     let bestCandidate = { l: 0, c: 0, h: 0 };
     let bestDist = -1;
-    const lJitter = (lMax - lMin) * 0.4;
+    const lJitter = 0.08;
 
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-      const l = Math.max(lMin, Math.min(lMax, lSlots[i] + rand(-lJitter, lJitter)));
+      const l = Math.max(0.05, Math.min(0.98, lSlots[i] + rand(-lJitter, lJitter)));
       const c = rand(cMin, cMax);
       const h = hueAnchors[i % hueAnchors.length];
 
@@ -145,9 +180,10 @@ export function generateRandomPalette(options: GenerateOptions): RGB[] {
     selected.push(bestCandidate);
   }
 
-  // Generate achromatic / low-chroma colors
+  // Generate achromatic / low-chroma colors spread across lightness
+  const achroLSlots = generateLightnessSlots(valueMode, achromaticCount);
   for (let i = 0; i < achromaticCount; i++) {
-    const l = lMin + (lMax - lMin) * ((i + 0.5) / achromaticCount);
+    const l = achroLSlots[i];
     const c = rand(0, cMin * 0.3);
     const h = Math.random() * 360;
     selected.push({ l, c, h });

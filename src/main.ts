@@ -5,7 +5,7 @@ import type { ExtractResult } from './image';
 import { PRESET_PALETTES, loadPalFile, parseJascPal, mapPaletteByHue } from './palette';
 import type { MappingMode } from './palette';
 import { generateRandomPalette } from './random-palette';
-import type { Brightness, HueMode, PaletteSize } from './random-palette';
+import type { ValueMode, HueMode, PaletteSize } from './random-palette';
 import { t, getLocale, setLocale, getLocaleNames, getHtmlLang } from './i18n';
 import type { Locale } from './i18n';
 import { inject } from '@vercel/analytics';
@@ -29,7 +29,7 @@ let state: {
   selectedPreset: number;
   paletteColors: RGB[] | null;
   paletteMapping: Map<string, RGB> | null;
-  randomBrightness: Brightness;
+  randomValueMode: ValueMode;
   randomHueMode: HueMode;
   randomSize: PaletteSize;
   mappingMode: MappingMode;
@@ -42,7 +42,7 @@ let state: {
   selectedPreset: 2,
   paletteColors: null,
   paletteMapping: null,
-  randomBrightness: 'normal',
+  randomValueMode: 'valueScale',
   randomHueMode: 'complementary',
   randomSize: 16,
   mappingMode: 'nearest' as MappingMode,
@@ -123,11 +123,12 @@ function render() {
         <div id="random-options" style="display:${state.paletteMode === 'random' ? '' : 'none'}">
           <div class="random-controls">
             <div class="random-group">
-              <span class="random-label">${t('brightness')}</span>
-              <div class="toggle-group" data-random="brightness">
-                <button class="toggle-btn${state.randomBrightness === 'bright' ? ' active' : ''}" data-value="bright">${t('bright')}</button>
-                <button class="toggle-btn${state.randomBrightness === 'normal' ? ' active' : ''}" data-value="normal">${t('normal')}</button>
-                <button class="toggle-btn${state.randomBrightness === 'muted' ? ' active' : ''}" data-value="muted">${t('muted')}</button>
+              <span class="random-label">${t('valueMode')}</span>
+              <div class="toggle-group" data-random="valueMode">
+                <button class="toggle-btn${state.randomValueMode === 'highContrast' ? ' active' : ''}" data-value="highContrast">${t('highContrast')}</button>
+                <button class="toggle-btn${state.randomValueMode === 'lowContrast' ? ' active' : ''}" data-value="lowContrast">${t('lowContrast')}</button>
+                <button class="toggle-btn${state.randomValueMode === 'valueScale' ? ' active' : ''}" data-value="valueScale">${t('valueScale')}</button>
+                <button class="toggle-btn${state.randomValueMode === 'rule603010' ? ' active' : ''}" data-value="rule603010">${t('rule603010')}</button>
               </div>
             </div>
             <div class="random-group">
@@ -351,7 +352,7 @@ function bindEvents() {
     const key = group.dataset.random;
     group.querySelectorAll<HTMLButtonElement>('.toggle-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
-        if (key === 'brightness') state.randomBrightness = btn.dataset.value as Brightness;
+        if (key === 'valueMode') state.randomValueMode = btn.dataset.value as ValueMode;
         else if (key === 'hueMode') state.randomHueMode = btn.dataset.value as HueMode;
         else if (key === 'size') state.randomSize = parseInt(btn.dataset.value!, 10) as PaletteSize;
         group.querySelectorAll('.toggle-btn').forEach((b) => b.classList.remove('active'));
@@ -451,7 +452,7 @@ async function applyPaletteSelection() {
 
 function applyRandomPalette() {
   const colors = generateRandomPalette({
-    brightness: state.randomBrightness,
+    valueMode: state.randomValueMode,
     hueMode: state.randomHueMode,
     size: state.randomSize,
   });
