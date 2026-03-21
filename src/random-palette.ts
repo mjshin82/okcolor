@@ -3,15 +3,15 @@ import { oklchToRgb } from './color';
 
 export type ValueMode = 'highContrast' | 'lowContrast' | 'valueScale' | 'rule603010';
 export type HueMode = 'complementary' | 'analogous' | 'triadic' | 'splitComplementary' | 'tetradic' | 'monochromatic';
+export type SaturationMode = 'vividMuted' | 'satScale' | 'uniform' | 'allLow' | 'allHigh' | 'chaotic';
 export type PaletteSize = 8 | 16 | 32 | 64;
 
 interface GenerateOptions {
   valueMode: ValueMode;
   hueMode: HueMode;
+  saturationMode: SaturationMode;
   size: PaletteSize;
 }
-
-const CHROMA_RANGE: [number, number] = [0.04, 0.22];
 
 function rand(min: number, max: number): number {
   return min + Math.random() * (max - min);
@@ -81,6 +81,73 @@ function generateLightnessSlots(mode: ValueMode, count: number): number[] {
 }
 
 /**
+ * Generate chroma slots based on saturation mode.
+ */
+function generateChromaSlots(mode: SaturationMode, count: number): number[] {
+  const slots: number[] = [];
+
+  switch (mode) {
+    case 'vividMuted': {
+      // 25% high chroma accent, 75% low chroma background
+      const accentCount = Math.max(1, Math.round(count * 0.25));
+      const bgCount = count - accentCount;
+      for (let i = 0; i < accentCount; i++) {
+        slots.push(rand(0.15, 0.25));
+      }
+      for (let i = 0; i < bgCount; i++) {
+        slots.push(rand(0.02, 0.08));
+      }
+      break;
+    }
+    case 'satScale': {
+      // Even distribution from low to high chroma
+      for (let i = 0; i < count; i++) {
+        const base = 0.02 + (0.24 - 0.02) * (i / (count - 1 || 1));
+        slots.push(base + rand(-0.01, 0.01));
+      }
+      break;
+    }
+    case 'uniform': {
+      // One chroma level dominates
+      const level = rand(0.06, 0.18);
+      for (let i = 0; i < count; i++) {
+        slots.push(Math.max(0.01, level + rand(-0.03, 0.03)));
+      }
+      break;
+    }
+    case 'allLow': {
+      // All low chroma — vintage, muted
+      for (let i = 0; i < count; i++) {
+        slots.push(rand(0.01, 0.06));
+      }
+      break;
+    }
+    case 'allHigh': {
+      // All high chroma — vivid
+      for (let i = 0; i < count; i++) {
+        slots.push(rand(0.14, 0.26));
+      }
+      break;
+    }
+    case 'chaotic': {
+      // Random chroma with big jumps
+      for (let i = 0; i < count; i++) {
+        slots.push(rand(0.01, 0.26));
+      }
+      break;
+    }
+  }
+
+  // Shuffle
+  for (let i = slots.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [slots[i], slots[j]] = [slots[j], slots[i]];
+  }
+
+  return slots;
+}
+
+/**
  * Generate hue anchors based on color harmony mode.
  */
 function generateHueAnchors(mode: HueMode, count: number): number[] {
@@ -140,11 +207,11 @@ function minDistance(
 }
 
 export function generateRandomPalette(options: GenerateOptions): RGB[] {
-  const { valueMode, hueMode, size } = options;
-  const [cMin, cMax] = CHROMA_RANGE;
+  const { valueMode, hueMode, saturationMode, size } = options;
 
   const hueAnchors = generateHueAnchors(hueMode, size);
   const lSlots = generateLightnessSlots(valueMode, size);
+  const cSlots = generateChromaSlots(saturationMode, size);
 
   const achromaticCount = Math.max(1, Math.floor(size * 0.15));
   const chromaticCount = size - achromaticCount;
@@ -160,7 +227,7 @@ export function generateRandomPalette(options: GenerateOptions): RGB[] {
 
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
       const l = Math.max(0.05, Math.min(0.98, lSlots[i] + rand(-lJitter, lJitter)));
-      const c = rand(cMin, cMax);
+      const c = Math.max(0.01, cSlots[i] + rand(-0.02, 0.02));
       const h = hueAnchors[i % hueAnchors.length];
 
       const candidate = { l, c, h };
@@ -184,7 +251,7 @@ export function generateRandomPalette(options: GenerateOptions): RGB[] {
   const achroLSlots = generateLightnessSlots(valueMode, achromaticCount);
   for (let i = 0; i < achromaticCount; i++) {
     const l = achroLSlots[i];
-    const c = rand(0, cMin * 0.3);
+    const c = rand(0, 0.015);
     const h = Math.random() * 360;
     selected.push({ l, c, h });
   }

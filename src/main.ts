@@ -5,7 +5,7 @@ import type { ExtractResult } from './image';
 import { PRESET_PALETTES, loadPalFile, parseJascPal, mapPaletteByHue } from './palette';
 import type { MappingMode } from './palette';
 import { generateRandomPalette } from './random-palette';
-import type { ValueMode, HueMode, PaletteSize } from './random-palette';
+import type { ValueMode, HueMode, SaturationMode, PaletteSize } from './random-palette';
 import { t, getLocale, setLocale, getLocaleNames, getHtmlLang } from './i18n';
 import type { Locale } from './i18n';
 import { inject } from '@vercel/analytics';
@@ -31,6 +31,7 @@ let state: {
   paletteMapping: Map<string, RGB> | null;
   randomValueMode: ValueMode;
   randomHueMode: HueMode;
+  randomSatMode: SaturationMode;
   randomSize: PaletteSize;
   mappingMode: MappingMode;
 } = {
@@ -44,6 +45,7 @@ let state: {
   paletteMapping: null,
   randomValueMode: 'valueScale',
   randomHueMode: 'complementary',
+  randomSatMode: 'satScale',
   randomSize: 16,
   mappingMode: 'nearest' as MappingMode,
 };
@@ -140,6 +142,17 @@ function render() {
                 <button class="toggle-btn${state.randomHueMode === 'splitComplementary' ? ' active' : ''}" data-value="splitComplementary">${t('hueSplitComp')}</button>
                 <button class="toggle-btn${state.randomHueMode === 'tetradic' ? ' active' : ''}" data-value="tetradic">${t('hueTetradic')}</button>
                 <button class="toggle-btn${state.randomHueMode === 'monochromatic' ? ' active' : ''}" data-value="monochromatic">${t('hueMonochromatic')}</button>
+              </div>
+            </div>
+            <div class="random-group">
+              <span class="random-label">${t('saturation')}</span>
+              <div class="toggle-group" data-random="satMode">
+                <button class="toggle-btn${state.randomSatMode === 'vividMuted' ? ' active' : ''}" data-value="vividMuted">${t('satVividMuted')}</button>
+                <button class="toggle-btn${state.randomSatMode === 'satScale' ? ' active' : ''}" data-value="satScale">${t('satScale')}</button>
+                <button class="toggle-btn${state.randomSatMode === 'uniform' ? ' active' : ''}" data-value="uniform">${t('satUniform')}</button>
+                <button class="toggle-btn${state.randomSatMode === 'allLow' ? ' active' : ''}" data-value="allLow">${t('satAllLow')}</button>
+                <button class="toggle-btn${state.randomSatMode === 'allHigh' ? ' active' : ''}" data-value="allHigh">${t('satAllHigh')}</button>
+                <button class="toggle-btn${state.randomSatMode === 'chaotic' ? ' active' : ''}" data-value="chaotic">${t('satChaotic')}</button>
               </div>
             </div>
             <div class="random-group">
@@ -354,6 +367,7 @@ function bindEvents() {
       btn.addEventListener('click', () => {
         if (key === 'valueMode') state.randomValueMode = btn.dataset.value as ValueMode;
         else if (key === 'hueMode') state.randomHueMode = btn.dataset.value as HueMode;
+        else if (key === 'satMode') state.randomSatMode = btn.dataset.value as SaturationMode;
         else if (key === 'size') state.randomSize = parseInt(btn.dataset.value!, 10) as PaletteSize;
         group.querySelectorAll('.toggle-btn').forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
@@ -454,6 +468,7 @@ function applyRandomPalette() {
   const colors = generateRandomPalette({
     valueMode: state.randomValueMode,
     hueMode: state.randomHueMode,
+    saturationMode: state.randomSatMode,
     size: state.randomSize,
   });
   state.paletteColors = colors;
