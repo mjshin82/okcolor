@@ -47,11 +47,11 @@ let state: {
   paletteMappingColors: null,
   paletteMapping: null,
   randomHueOffset: 0,
-  randomValueMode: 'rule603010',
-  randomHueMode: 'analogous',
-  randomSatMode: 'uniform',
-  randomSize: 32,
-  mappingMode: 'nearest' as MappingMode,
+  randomValueMode: 'highContrast',
+  randomHueMode: 'splitComplementary',
+  randomSatMode: 'vividMuted',
+  randomSize: 64,
+  mappingMode: 'diverse' as MappingMode,
 };
 
 const app = document.getElementById('app')!;
@@ -125,25 +125,33 @@ function render() {
         <div id="preset-options" style="display:${state.paletteMode === 'preset' ? '' : 'none'}">
           <select id="preset-select">${renderPresetOptions()}</select>
           <a id="preset-link" class="preset-link" href="${PRESET_PALETTES[state.selectedPreset].url}" target="_blank" rel="noopener noreferrer">${PRESET_PALETTES[state.selectedPreset].name} ${t('onLospec')} ↗</a>
+          <div class="mapping-mode-inline">
+            <span class="random-label">${t('mappingMode')}</span>
+            <div class="toggle-group">
+              <button class="toggle-btn${state.mappingMode === 'nearest' ? ' active' : ''}" data-mapping="nearest">${t('mappingNearest')}</button>
+              <button class="toggle-btn${state.mappingMode === 'diverse' ? ' active' : ''}" data-mapping="diverse">${t('mappingDiverse')}</button>
+              <button class="toggle-btn${state.mappingMode === 'hueOnly' ? ' active' : ''}" data-mapping="hueOnly">${t('mappingHueOnly')}</button>
+            </div>
+          </div>
         </div>
         <div id="random-options" style="display:${state.paletteMode === 'random' ? '' : 'none'}">
           <div class="random-controls-vertical">
             <div class="random-row">
               <span class="random-label">${t('valueMode')}</span>
               <div class="toggle-group" data-random="valueMode">
-                <button class="toggle-btn${state.randomValueMode === 'rule603010' ? ' active' : ''}" data-value="rule603010">${t('rule603010')}</button>
                 <button class="toggle-btn${state.randomValueMode === 'highContrast' ? ' active' : ''}" data-value="highContrast">${t('highContrast')}</button>
                 <button class="toggle-btn${state.randomValueMode === 'lowContrast' ? ' active' : ''}" data-value="lowContrast">${t('lowContrast')}</button>
                 <button class="toggle-btn${state.randomValueMode === 'valueScale' ? ' active' : ''}" data-value="valueScale">${t('valueScale')}</button>
+                <button class="toggle-btn${state.randomValueMode === 'rule603010' ? ' active' : ''}" data-value="rule603010">${t('rule603010')}</button>
               </div>
             </div>
             <div class="random-row">
               <span class="random-label">${t('harmony')}</span>
               <div class="toggle-group" data-random="hueMode">
-                <button class="toggle-btn${state.randomHueMode === 'analogous' ? ' active' : ''}" data-value="analogous">${t('hueAnalogous')}</button>
-                <button class="toggle-btn${state.randomHueMode === 'complementary' ? ' active' : ''}" data-value="complementary">${t('hueComplementary')}</button>
-                <button class="toggle-btn${state.randomHueMode === 'triadic' ? ' active' : ''}" data-value="triadic">${t('hueTriadic')}</button>
                 <button class="toggle-btn${state.randomHueMode === 'splitComplementary' ? ' active' : ''}" data-value="splitComplementary">${t('hueSplitComp')}</button>
+                <button class="toggle-btn${state.randomHueMode === 'complementary' ? ' active' : ''}" data-value="complementary">${t('hueComplementary')}</button>
+                <button class="toggle-btn${state.randomHueMode === 'analogous' ? ' active' : ''}" data-value="analogous">${t('hueAnalogous')}</button>
+                <button class="toggle-btn${state.randomHueMode === 'triadic' ? ' active' : ''}" data-value="triadic">${t('hueTriadic')}</button>
                 <button class="toggle-btn${state.randomHueMode === 'tetradic' ? ' active' : ''}" data-value="tetradic">${t('hueTetradic')}</button>
                 <button class="toggle-btn${state.randomHueMode === 'monochromatic' ? ' active' : ''}" data-value="monochromatic">${t('hueMonochromatic')}</button>
               </div>
@@ -151,8 +159,8 @@ function render() {
             <div class="random-row">
               <span class="random-label">${t('saturation')}</span>
               <div class="toggle-group" data-random="satMode">
-                <button class="toggle-btn${state.randomSatMode === 'uniform' ? ' active' : ''}" data-value="uniform">${t('satUniform')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'vividMuted' ? ' active' : ''}" data-value="vividMuted">${t('satVividMuted')}</button>
+                <button class="toggle-btn${state.randomSatMode === 'uniform' ? ' active' : ''}" data-value="uniform">${t('satUniform')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'satScale' ? ' active' : ''}" data-value="satScale">${t('satScale')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'allLow' ? ' active' : ''}" data-value="allLow">${t('satAllLow')}</button>
                 <button class="toggle-btn${state.randomSatMode === 'allHigh' ? ' active' : ''}" data-value="allHigh">${t('satAllHigh')}</button>
@@ -162,13 +170,25 @@ function render() {
             <div class="random-row">
               <span class="random-label">${t('colors')}</span>
               <div class="toggle-group" data-random="size">
-                <button class="toggle-btn${state.randomSize === 32 ? ' active' : ''}" data-value="32">32</button>
-                <button class="toggle-btn${state.randomSize === 8 ? ' active' : ''}" data-value="8">8</button>
-                <button class="toggle-btn${state.randomSize === 16 ? ' active' : ''}" data-value="16">16</button>
                 <button class="toggle-btn${state.randomSize === 64 ? ' active' : ''}" data-value="64">64</button>
+                <button class="toggle-btn${state.randomSize === 32 ? ' active' : ''}" data-value="32">32</button>
+                <button class="toggle-btn${state.randomSize === 16 ? ' active' : ''}" data-value="16">16</button>
+                <button class="toggle-btn${state.randomSize === 8 ? ' active' : ''}" data-value="8">8</button>
+              </div>
+            </div>
+            <div class="random-row">
+              <span class="random-label">${t('mappingMode')}</span>
+              <div class="toggle-group">
+                <button class="toggle-btn${state.mappingMode === 'nearest' ? ' active' : ''}" data-mapping="nearest">${t('mappingNearest')}</button>
+                <button class="toggle-btn${state.mappingMode === 'diverse' ? ' active' : ''}" data-mapping="diverse">${t('mappingDiverse')}</button>
+                <button class="toggle-btn${state.mappingMode === 'hueOnly' ? ' active' : ''}" data-mapping="hueOnly">${t('mappingHueOnly')}</button>
               </div>
             </div>
             <button id="random-generate-btn" class="generate-btn-large">${t('generate')}</button>
+            <div id="generated-palette-download" class="generated-palette-download" style="display:none">
+              <div id="generated-palette-swatches" class="inline-palette-swatches"></div>
+              <button id="download-generated-pal-btn" class="download-btn">${t('downloadPal')}</button>
+            </div>
           </div>
         </div>
         <div id="custom-options" style="display:${state.paletteMode === 'custom' ? '' : 'none'}">
@@ -177,14 +197,14 @@ function render() {
           </label>
           <input type="file" id="pal-file-input" accept=".pal" />
           <span id="custom-pal-name" class="pal-name"></span>
-        </div>
-      </div>
-      <div id="mapping-mode-group" class="mapping-mode-group" style="display:${state.paletteMode !== 'original' ? '' : 'none'}">
-        <span class="random-label">${t('mappingMode')}</span>
-        <div class="toggle-group">
-          <button class="toggle-btn${state.mappingMode === 'nearest' ? ' active' : ''}" data-mapping="nearest">${t('mappingNearest')}</button>
-          <button class="toggle-btn${state.mappingMode === 'diverse' ? ' active' : ''}" data-mapping="diverse">${t('mappingDiverse')}</button>
-          <button class="toggle-btn${state.mappingMode === 'hueOnly' ? ' active' : ''}" data-mapping="hueOnly">${t('mappingHueOnly')}</button>
+          <div class="mapping-mode-inline">
+            <span class="random-label">${t('mappingMode')}</span>
+            <div class="toggle-group">
+              <button class="toggle-btn${state.mappingMode === 'nearest' ? ' active' : ''}" data-mapping="nearest">${t('mappingNearest')}</button>
+              <button class="toggle-btn${state.mappingMode === 'diverse' ? ' active' : ''}" data-mapping="diverse">${t('mappingDiverse')}</button>
+              <button class="toggle-btn${state.mappingMode === 'hueOnly' ? ' active' : ''}" data-mapping="hueOnly">${t('mappingHueOnly')}</button>
+            </div>
+          </div>
         </div>
       </div>
       <div id="palette-preview" class="palette-preview"></div>
@@ -384,6 +404,11 @@ function bindEvents() {
     generateBtn.addEventListener('click', applyRandomPalette);
   }
 
+  const downloadGenBtn = document.getElementById('download-generated-pal-btn');
+  if (downloadGenBtn) {
+    downloadGenBtn.addEventListener('click', downloadGeneratedPal);
+  }
+
   // Mapping mode toggle
   document.querySelectorAll<HTMLButtonElement>('[data-mapping]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -421,9 +446,6 @@ function updatePaletteModeUI() {
   if (presetOpts) presetOpts.style.display = state.paletteMode === 'preset' ? '' : 'none';
   if (randomOpts) randomOpts.style.display = state.paletteMode === 'random' ? '' : 'none';
   if (customOpts) customOpts.style.display = state.paletteMode === 'custom' ? '' : 'none';
-  const mappingGroup = document.getElementById('mapping-mode-group');
-  if (mappingGroup) mappingGroup.style.display = state.paletteMode !== 'original' ? '' : 'none';
-
   document.querySelectorAll<HTMLLabelElement>('.palette-radio').forEach((label) => {
     const input = label.querySelector('input') as HTMLInputElement;
     label.classList.toggle('active', input.checked);
@@ -487,6 +509,9 @@ function applyRandomPalette() {
   state.randomHueOffset = result.hueOffset;
   recomputePaletteMapping();
   renderPalettePreview(result.displayColors);
+  // Show generated palette download area
+  const genArea = document.getElementById('generated-palette-download');
+  if (genArea) genArea.style.display = '';
   updateDisplay();
 }
 
@@ -680,6 +705,16 @@ function updateDisplay() {
       modCanvas.onclick = () => openLightbox(modCanvas);
     }
   }
+
+  // Update generated palette swatches with current hue offset
+  const genSwatches = document.getElementById('generated-palette-swatches');
+  if (genSwatches && state.paletteColors && state.paletteMode === 'random') {
+    const displayColors = getGeneratedPaletteWithOffsets();
+    genSwatches.innerHTML = displayColors.map((c) => {
+      const hex = rgbToHex(c);
+      return `<div class="inline-swatch" style="background:${hex}" title="${hex}"></div>`;
+    }).join('');
+  }
 }
 
 function getUniqueColors(colors: RGB[]): RGB[] {
@@ -717,15 +752,9 @@ function downloadOriginalPal() {
   downloadPalFile(colors, 'original-palette.pal');
 }
 
-function downloadModifiedPal() {
-  // Download the full palette with user C/H offsets applied
-  // For random palettes: display colors already have randomHueOffset,
-  // so only add user's hueOffset (not randomHueOffset again)
-  const basePalette = state.paletteColors
-    ? state.paletteColors
-    : state.entries.map((e) => e.original);
-
-  const colors = basePalette.map((rgb) => {
+function getGeneratedPaletteWithOffsets(): RGB[] {
+  if (!state.paletteColors) return [];
+  return state.paletteColors.map((rgb) => {
     const oklch = rgbToOklch(rgb);
     const modified: OKLCH = {
       l: oklch.l,
@@ -734,7 +763,18 @@ function downloadModifiedPal() {
     };
     return oklchToRgb(modified);
   });
+}
 
+function downloadGeneratedPal() {
+  const colors = getGeneratedPaletteWithOffsets();
+  if (colors.length === 0) return;
+  downloadPalFile(colors, 'generated-palette.pal');
+}
+
+function downloadModifiedPal() {
+  // Download only colors actually used in the modified image
+  if (state.entries.length === 0) return;
+  const colors = getUniqueColors(state.entries.map((e) => computeModifiedColor(e)));
   downloadPalFile(colors, 'modified-palette.pal');
 }
 

@@ -328,11 +328,19 @@ body {
   transform: scale(0.98);
 }
 
-.mapping-mode-group {
+.mapping-mode-inline {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-top: 8px;
+}
+
+.generated-palette-download {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .palette-preview {
